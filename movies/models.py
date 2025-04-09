@@ -13,7 +13,8 @@ class Movie(models.Model):
     description = models.TextField()
     release_date = models.DateField()
     genres = models.ManyToManyField(Genre)
-    video_link = models.URLField()
+    video_link = models.URLField(null=True, blank=True)
+    streaming_link = models.URLField(null=True, blank=True)
     video_file = models.FileField(upload_to='videos/', null=True, blank=True) # them
     thumbnail = models.ImageField(upload_to='movie_thumbnails/')
     views = models.IntegerField(default=0)  # Track the number of views
@@ -21,6 +22,8 @@ class Movie(models.Model):
     # trailer = models.URLField()
     trailer_file = models.FileField(upload_to='trailers/', null=True, blank=True)
     trailer_link = models.URLField(null=True, blank=True)
+    youtube_embed_url = models.URLField(blank=True, null=True)
+
 
     def get_like_count(self):
         return self.like_set.count()
