@@ -13,11 +13,23 @@
             <div class="mb-4">
                 <h2 class="text-white">{{ movie.title }} - Trailer</h2>
 
-                {% if movie.trailer_file %}
+                {% if movie.youtube_embed_url %}
+                <div class="ratio ratio-16x9 mb-3">
+                    <iframe 
+                        src="{{ movie.youtube_embed_url }}" 
+                        title="YouTube video player"
+                        frameborder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        allowfullscreen>
+                    </iframe>
+                </div>
+
+                {% elif movie.trailer_file %}
                 <video class="w-100 rounded shadow" controls autoplay>
                     <source src="{{ movie.trailer_file.url }}" type="video/mp4">
                     Trình duyệt không hỗ trợ video.
                 </video>
+
                 {% else %}
                 <div class="alert alert-warning">Không có trailer được tải lên cho phim này.</div>
                 {% endif %}

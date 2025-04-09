@@ -48,35 +48,38 @@
                             </div>
                         </div>
                     </div>
-                    <!-- <a href="{{ movie.video_link }}" class="btn btn-danger btn-lg watch-btn" target="_blank"> -->
-                        <a href="{% url 'watch_movie' movie.id %}" class="btn btn-danger btn-lg watch-btn">
-
-                        <i class="bi bi-play-fill me-2"></i>Xem phim
-                    </a> 
-                    
-                    <!-- <a href="{{ movie.trailer }}" class="btn btn-info btn-lg" target="_blank"> -->
-                        <a href="{% url 'watch_trailer' movie.id %}" class="btn btn-outline-warning">
-                        <i class="bi bi-play-fill me-2"></i>Trailer
+     
+                    <div class="d-flex flex-wrap gap-2 mb-4">
+                        <a href="{% url 'watch_movie' movie.id %}" class="btn btn-danger btn-lg flex-fill text-center btn-transparent">
+                            <i class="bi bi-play-fill me-2"></i>Xem phim
                         </a>
-                  
+                        <a href="{% url 'watch_trailer' movie.id %}" class="btn btn-outline-warning btn-lg flex-fill text-center btn-transparent">
+                            <i class="bi bi-play-fill me-2"></i>Trailer
+                        </a>
+                    
                         {% if user.is_authenticated %}
-                        {% if in_user_list %}
-                            <a href="{% url 'remove_from_list' movie.id %}" class="btn btn-warning btn-lg"><i class="bi bi-x-lg"></i></a>
-                        {% else %}
-                            <a href="{% url 'add_to_list' movie.id %}" class="btn btn-success btn-lg"><i class="bi bi-plus-lg"></i></a>
+                            {% if in_user_list %}
+                                <a href="{% url 'remove_from_list' movie.id %}" class="btn btn-warning btn-lg flex-fill text-center btn-transparent">
+                                    <i class="bi bi-x-lg me-2"></i>Gỡ khỏi danh sách
+                                </a>
+                            {% else %}
+                                <a href="{% url 'add_to_list' movie.id %}" class="btn btn-success btn-lg flex-fill text-center btn-transparent">
+                                    <i class="bi bi-plus-lg me-2"></i>Thêm vào danh sách
+                                </a>
+                            {% endif %}
                         {% endif %}
-                    {% endif %}
-                    {% if user_liked %}
-                    <a href="{% url 'like_movie' movie.id %}" class="btn btn-danger btn-lg watch-btn">
-                        <i class="bi bi-hand-thumbs-down"></i> 
-                    </a> 
-
-                    {% else %}
-                    <a href="{% url 'like_movie' movie.id %}" class="btn btn-danger btn-lg watch-btn">
-                        <i class="bi bi-hand-thumbs-up"></i> 
-                    </a> 
-                    {% endif %}
-
+                    
+                        {% if user_liked %}
+                            <a href="{% url 'like_movie' movie.id %}" class="btn btn-danger btn-lg flex-fill text-center btn-transparent">
+                                <i class="bi bi-hand-thumbs-down me-2"></i>Bỏ thích
+                            </a> 
+                        {% else %}
+                            <a href="{% url 'like_movie' movie.id %}" class="btn btn-danger btn-lg flex-fill text-center btn-transparent">
+                                <i class="bi bi-hand-thumbs-up me-2"></i>Thích
+                            </a> 
+                        {% endif %}
+                    </div>
+                    
                     
                     {% if messages %}
     <div class="alerts mt-3">
@@ -303,5 +306,48 @@
         height: 90px;
         object-fit: cover;
     }
+    .btn {
+    min-width: 180px;
+    }
+    .btn-transparent {
+        background-color: transparent;
+        border: 2px solid currentColor;
+        color: inherit;
+        transition: all 0.3s ease;
+    }
+
+    .btn-transparent:hover {
+        background-color: rgba(255, 255, 255, 0.1); /* hoặc màu phù hợp */
+        color: #fff;
+        border-color: #fff;
+    }
+
+    .btn-danger.btn-transparent:hover {
+        background-color: #dc3545;
+        border-color: #dc3545;
+        color: white;
+    }
+
+    .btn-warning.btn-transparent:hover {
+        background-color: #ffc107;
+        border-color: #ffc107;
+        color: black;
+    }
+
+    .btn-success.btn-transparent:hover {
+        background-color: #198754;
+        border-color: #198754;
+        color: white;
+    }
+
+    .btn-outline-warning.btn-transparent:hover {
+        background-color: #ffc107;
+        border-color: #ffc107;
+        color: black;
+    }
+
+
+
 </style>
 {% endblock %}
+
