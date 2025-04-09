@@ -1,4 +1,4 @@
-# Netflix Clone - Movie Streaming Platform
+# This is project about movie web app 
 
 A Django-based movie streaming platform that replicates core Netflix functionalities. This application allows users to browse, rate, and manage their favorite movies while providing personalized recommendations based on user interactions.
 
