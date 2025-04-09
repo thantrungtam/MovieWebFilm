@@ -56,13 +56,14 @@ A Django-based movie streaming platform that replicates core Netflix functionali
 
 1. Clone the repository
 ```bash
-git clone https://github.com/vauzher/Movies-Streaming-App.git
-cd netflix-clone
+git clone https://github.com/thantrungtam/MovieWebFilm.git
+cd MovieWebFilm
 ```
 3. Create and activate virtual environment
 ```bash
 python -m venv venv
-source venv/bin/activate # On Windows: venv\Scripts\activate
+# On Mac:  source venv/bin/activate
+# On Windows: venv\Scripts\activate
 ```
 4. Install dependencies
 ```bash
@@ -122,11 +123,6 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - Netflix for inspiration
 - Bootstrap team for the framework
 - Django community for the amazing framework
-
-## 📧 Contact
-
-Vauzher - vauzher@bytesnipes.com
-Project Link: https://github.com/vauzher/Movies-Streaming-App.git
 
 
 
