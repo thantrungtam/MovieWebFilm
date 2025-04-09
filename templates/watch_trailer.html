@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ movie.title }} - Trailer | Mẹt Phim{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="mb-4">
+        <a href="{% url 'movie_detail' movie.id %}" class="btn btn-secondary">&larr; Quay lại phim</a>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="mb-4">
+                <h2 class="text-white">{{ movie.title }} - Trailer</h2>
+
+                {% if movie.trailer_file %}
+                <video class="w-100 rounded shadow" controls autoplay>
+                    <source src="{{ movie.trailer_file.url }}" type="video/mp4">
+                    Trình duyệt không hỗ trợ video.
+                </video>
+                {% else %}
+                <div class="alert alert-warning">Không có trailer được tải lên cho phim này.</div>
+                {% endif %}
+            </div>
+
+            <div class="card bg-dark text-white mb-4">
+                <div class="card-body">
+                    <h3 class="card-title">Về phim</h3>
+                    <p>{{ movie.description }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Related Movies -->
+        <div class="col-md-4">
+            <div class="card bg-dark text-white">
+                <div class="card-body">
+                    <h4 class="card-title">Phim liên quan</h4>
+                    {% if related_movies %}
+                        {% for related_movie in related_movies %}
+                        <a href="{% url 'movie_detail' related_movie.id %}" class="d-flex align-items-center mb-3 text-decoration-none text-white">
+                            <img src="{{ related_movie.thumbnail.url }}" alt="{{ related_movie.title }}" class="me-3 rounded" width="60" height="90">
+                            <div>
+                                <h6 class="mb-1">{{ related_movie.title }}</h6>
+                                <div class="small text-muted">
+                                    <i class="bi bi-star-fill text-warning"></i> {{ related_movie.average_rating|floatformat:1 }}
+                                    <i class="bi bi-hand-thumbs-up-fill text-info ms-3"></i> {{ related_movie.like_count }}
+                                </div>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted">Không có phim liên quan được tìm thấy.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .comment-block {
+        border-left: 4px solid #007bff;
+    }
+</style>
+{% endblock %}
