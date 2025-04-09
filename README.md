@@ -123,11 +123,6 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - Bootstrap team for the framework
 - Django community for the amazing framework
 
-## 📧 Contact
-
-Vauzher - vauzher@bytesnipes.com
-Project Link: https://github.com/vauzher/Movies-Streaming-App.git
-
 
 
 
