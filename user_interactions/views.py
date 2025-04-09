@@ -12,6 +12,7 @@ def rate_movie(request, movie_id):
         Rating.objects.update_or_create(user=request.user, movie=movie, defaults={'value': value})
     return redirect('movie_detail', pk=movie_id)
 
+
 @login_required
 def like_movie(request, movie_id):
     movie = get_object_or_404(Movie, id=movie_id)
@@ -28,6 +29,8 @@ def comment_movie(request, movie_id):
         content = request.POST.get('content')
         Comment.objects.create(user=request.user, movie=movie, content=content)
     return redirect('movie_detail', pk=movie_id)
+
+
 
 @login_required
 def add_to_list(request, movie_id):
