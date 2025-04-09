@@ -8,6 +8,8 @@ from datetime import timedelta
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.apps import AppConfig
+from django.shortcuts import render, get_object_or_404
+
 
 class HomeView(ListView):
     model = Movie
@@ -96,9 +98,12 @@ class MovieDetailView(DetailView):
             related_movie.average_rating = related_movie.get_average_rating()
         return related_movies
 
+# def get_trending_movies():
+#     one_week_ago = timezone.now() - timedelta(days=100)
+#     trending_movies = Movie.objects.filter(views__gt=1000, created_at__gte=one_week_ago).order_by('-views')[:10]
+#     return trending_movies
 def get_trending_movies():
-    one_week_ago = timezone.now() - timedelta(days=100)
-    trending_movies = Movie.objects.filter(views__gt=1000, created_at__gte=one_week_ago).order_by('-views')[:10]
+    trending_movies = Movie.objects.order_by('-views')[:10]
     return trending_movies
 
 
@@ -138,3 +143,20 @@ class MoviesView(ListView):
         return trending_movies  
     
 
+
+class MovieTrailerView(DetailView):
+    model = Movie
+    template_name = 'watch_trailer.html'
+    context_object_name = 'movie'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        movie = self.object
+        movie.like_count = movie.get_like_count()
+        movie.average_rating = movie.get_average_rating()
+        related_movies = Movie.objects.filter(genres__in=movie.genres.all()).exclude(id=movie.id).distinct()[:6]
+        for related in related_movies:
+            related.like_count = related.get_like_count()
+            related.average_rating = related.get_average_rating()
+        context['related_movies'] = related_movies
+        return context

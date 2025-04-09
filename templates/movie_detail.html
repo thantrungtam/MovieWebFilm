@@ -54,7 +54,8 @@
                         <i class="bi bi-play-fill me-2"></i>Xem phim
                     </a> 
                     
-                    <a href="{{ movie.trailer }}" class="btn btn-info btn-lg" target="_blank">
+                    <!-- <a href="{{ movie.trailer }}" class="btn btn-info btn-lg" target="_blank"> -->
+                        <a href="{% url 'watch_trailer' movie.id %}" class="btn btn-outline-warning">
                         <i class="bi bi-play-fill me-2"></i>Trailer
                         </a>
                   

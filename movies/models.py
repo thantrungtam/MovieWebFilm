@@ -18,7 +18,9 @@ class Movie(models.Model):
     thumbnail = models.ImageField(upload_to='movie_thumbnails/')
     views = models.IntegerField(default=0)  # Track the number of views
     created_at = models.DateTimeField(auto_now_add=True)  # Track when the movie was added
-    trailer = models.URLField()
+    # trailer = models.URLField()
+    trailer_file = models.FileField(upload_to='trailers/', null=True, blank=True)
+    trailer_link = models.URLField(null=True, blank=True)
 
     def get_like_count(self):
         return self.like_set.count()

@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block title %}Trang chủ - Mẹt {% endblock %}
+{% block title %}Trang chủ - Mẹt Phim {% endblock %}
 {% block content %}
 <div id="featuredCarousel" class="carousel slide carousel-fade" data-bs-ride="carousel">
     <div class="carousel-inner">
@@ -11,7 +11,10 @@
             <div class="carousel-caption d-none d-md-block">
                 <h2>{{ movie.title }}</h2>
                 <p>{{ movie.description|truncatewords:30 }}</p>
-                <a href="{% url 'movie_detail' movie.id %}" class="btn btn-lg btn-primary">
+                <!-- <a href="{% url 'movie_detail' movie.id %}" class="btn btn-lg btn-primary">
+                    <i class="fas fa-play me-2"></i>Xem ngay
+                </a> -->
+                <a href="{% url 'movie_detail' movie.id %}" class="btn btn-primary watch-btn w-100">
                     <i class="fas fa-play me-2"></i>Xem ngay
                 </a>
             </div>

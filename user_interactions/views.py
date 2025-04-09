@@ -59,3 +59,8 @@ def view_user_list(request):
 def watch_movie(request, movie_id):
     movie = get_object_or_404(Movie, pk=movie_id)
     return render(request, 'watch_movie.html', {'movie': movie})
+
+@login_required
+def watch_trailer(request, movie_id):
+    movie = get_object_or_404(Movie, pk=movie_id)
+    return render(request, 'watch_trailer.html', {'movie': movie})
