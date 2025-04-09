@@ -1,0 +1,306 @@
+{% extends 'base.html' %}
+{% block title %}{{ movie.title }} - Mẹt Phim{% endblock %}
+{% block content %}
+<div class="movie-hero" style="background-image: url('{{ movie.thumbnail.url }}');">
+    <div class="movie-hero-overlay">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-4">
+              
+                    {% if movie.thumbnail %}
+                    <img src="{{ movie.thumbnail.url }}" alt="{{ movie.title }}" class="img-fluid rounded shadow-lg movie-poster">
+                    {% else %}
+                    <div class="bg-secondary text-white p-5 rounded text-center">Không có hình ảnh hợp lệ!</div>
+                    {% endif %}
+                </div>
+                <div class="col-md-8">
+                    <h1 class="movie-title mb-3">{{ movie.title }} </h1>
+                   
+                        {% for genre in movie.genres.all %}
+                        <span class="badge bg-primary mb-2">{{ genre.name }}</span>
+                        {% endfor %}
+                   
+                    <p class="lead movie-description">{{ movie.description }}</p>
+                    <strong>Ngày ra mắt:</strong> {{ movie.release_date }}
+                   
+                    <div class="d-flex align-items-center mb-4">
+                        <div class="movie-stat me-4">
+                            {% if movie.average_rating %}
+                            <div class="stat-value">{{ movie.average_rating|floatformat:1 }}</div>
+                            {% else %}
+                            <p>Không đủ đánh giá</p>
+                            {% endif %}
+                            
+                            <div class="stat-label">
+                                <div class="star-rating">
+                                    {% for i in "12345" %}
+                                    
+                                    <i class="bi bi-star-fill{% if forloop.counter <= movie.average_rating %} active{% endif %}"></i>
+                                    {% endfor %}
+                                </div>
+                                <span>Đánh giá trung bình</span>
+                            </div>
+                        </div>
+                        <div class="movie-stat">
+                            <div class="stat-value">{{ movie.like_count }}</div>
+                            <div class="stat-label">
+                                <i class="bi bi-hand-thumbs-up-fill"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- <a href="{{ movie.video_link }}" class="btn btn-danger btn-lg watch-btn" target="_blank"> -->
+                        <a href="{% url 'watch_movie' movie.id %}" class="btn btn-danger btn-lg watch-btn">
+
+                        <i class="bi bi-play-fill me-2"></i>Xem phim
+                    </a> 
+                    
+                    <a href="{{ movie.trailer }}" class="btn btn-info btn-lg" target="_blank">
+                        <i class="bi bi-play-fill me-2"></i>Trailer
+                        </a>
+                  
+                        {% if user.is_authenticated %}
+                        {% if in_user_list %}
+                            <a href="{% url 'remove_from_list' movie.id %}" class="btn btn-warning btn-lg"><i class="bi bi-x-lg"></i></a>
+                        {% else %}
+                            <a href="{% url 'add_to_list' movie.id %}" class="btn btn-success btn-lg"><i class="bi bi-plus-lg"></i></a>
+                        {% endif %}
+                    {% endif %}
+                    {% if user_liked %}
+                    <a href="{% url 'like_movie' movie.id %}" class="btn btn-danger btn-lg watch-btn">
+                        <i class="bi bi-hand-thumbs-down"></i> 
+                    </a> 
+
+                    {% else %}
+                    <a href="{% url 'like_movie' movie.id %}" class="btn btn-danger btn-lg watch-btn">
+                        <i class="bi bi-hand-thumbs-up"></i> 
+                    </a> 
+                    {% endif %}
+
+                    
+                    {% if messages %}
+    <div class="alerts mt-3">
+        {% for message in messages %}
+            <div class="alert {% if message.tags %}alert-{{ message.tags }}{% else %}alert-info{% endif %} alert-dismissible fade show">
+                {{ message }}<button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="alert"
+                aria-label="Close"
+            ></button>
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
+
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h3 class="card-title">Đánh giá phim</h3>
+                    <form method="post" action="{% url 'rate_movie' movie.id %}" class="rating-form">
+                        {% csrf_token %}
+                        <div class="star-rating mb-3">
+                            {% for i in "54321" %}
+                            <input type="radio" id="star{{ i }}" name="rating" value="{{ i }}">
+                            <label for="star{{ i }}"><i class="bi bi-star-fill"></i></label>
+                            {% endfor %}
+                        </div>
+                        <button type="submit" class="btn btn-primary">Xác nhận đánh giá</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h3 class="card-title mb-4">Bình luận</h3>
+                    {% if movie.comments.all %}
+                        {% for comment in movie.comments.all %}
+                            <div class="comment-block bg-dark p-3 rounded mb-3">
+                                <div class="d-flex">
+                                    <div class="flex-shrink-0 me-3">
+                                        {% if comment.user.profile.profile_photo %}
+                                            <img width="60px" height="60px" src="{{ comment.user.profile.profile_photo.url }}" alt="{{ comment.user.username }}" class="rounded-circle user-avatar">
+                                        {% else %}
+                                            <div class="default-avatar rounded-circle bg-primary text-white">
+                                                {{ comment.user.username|make_list|first|upper }}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <h6 class="mb-0">{{ comment.user.username }}</h6>
+                                            <small class="text-muted">{{ comment.created_at|date:"F d, Y" }}</small>
+                                        </div>
+                                        <p class="mb-0">{{ comment.content }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted">Chưa có bình luận nào. Hãy là người đầu tiên bình luận!</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h3 class="card-title mb-3">Thêm bình luận</h3>
+                    <form method="post" action="{% url 'comment_movie' movie.id %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <textarea name="content" class="form-control" rows="3" placeholder="Write your comment here"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-chat-fill me-2"></i>Gửi bình luận
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h3 class="card-title mb-4">Phim liên quan</h3>
+                    {% if related_movies %}
+                        <div class="related-movies-list">
+                            {% for related_movie in related_movies %}
+                            
+                                <div class="related-movie-item mb-3">
+                                    <a href="{% url 'movie_detail' related_movie.id %}" class="d-flex align-items-center text-decoration-none">
+                                        <img src="{{ related_movie.thumbnail.url }}" alt="{{ related_movie.title }}" class="related-movie-thumbnail me-3">
+                                        <div class="related-movie-info">
+                                            <h5 class="mb-1">{{ related_movie.title }}</h5>
+                                            <div class="text-muted small">
+                                                <span class="me-2">
+                                                    <i class="bi bi-star-fill text-warning"></i>
+                                                    {{ related_movie.average_rating|floatformat:1 }}
+                                                </span>
+                                                <span>
+                                                    <i class="bi bi-hand-thumbs-up-fill text-primary"></i>
+                                                    {{ related_movie.like_count }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </a>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted">Không tìm thấy phim liên quan.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .movie-hero {
+        background-size: cover;
+        background-position: center;
+        position: relative;
+        min-height: 500px;
+        color: white;
+    }
+    .movie-hero-overlay {
+        background: rgba(0, 0, 0, 0.7);
+        padding: 50px 0;
+    }
+    .movie-poster {
+        transform: translateY(20px);
+        transition: transform 0.3s ease-in-out;
+    }
+    .movie-poster:hover {
+        transform: translateY(10px);
+    }
+    .movie-title {
+        font-size: 3rem;
+        font-weight: bold;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+    }
+    .movie-description {
+        font-size: 1.1rem;
+        max-width: 600px;
+    }
+    .movie-info {
+        font-size: 1rem;
+        opacity: 0.9;
+    }
+    .movie-rating {
+        font-size: 2rem;
+        font-weight: bold;
+    }
+    .rating-value {
+        color: #ffc107;
+    }
+    .rating-max {
+        font-size: 1rem;
+        opacity: 0.7;
+    }
+    .star-rating {
+        font-size: 1.5rem;
+        color: #ffc107;
+    }
+    .star-rating .bi-star-fill:not(.active) {
+        color: #e4e5e9;
+    }
+    .watch-btn {
+        font-size: 1.2rem;
+        padding: 10px 30px;
+    }
+    .rating-form .star-rating {
+        direction: rtl;
+        display: inline-block;
+    }
+    .rating-form .star-rating input[type="radio"] {
+        display: none;
+    }
+    .rating-form .star-rating label {
+        color: #e4e5e9;
+        font-size: 2rem;
+        padding: 0 0.1em;
+        cursor: pointer;
+    }
+    .rating-form .star-rating label:hover,
+    .rating-form .star-rating label:hover ~ label,
+    .rating-form .star-rating input[type="radio"]:checked ~ label {
+        color: #ffc107;
+    }
+    .default-avatar {
+        width: 50px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 1.2rem;
+    }
+    .comment-block {
+        border-left: 4px solid #007bff;
+        transition: transform 0.2s ease-in-out;
+    }
+    .comment-block:hover {
+        transform: translateX(5px);
+    }
+    .card-title {
+        color: #efefef;
+        border-bottom: 2px solid #007bff;
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+    }
+    .related-movie-thumbnail {
+        width: 60px;
+        height: 90px;
+        object-fit: cover;
+    }
+</style>
+{% endblock %}

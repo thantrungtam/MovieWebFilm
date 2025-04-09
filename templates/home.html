@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+{% block title %}Trang chủ - Mẹt {% endblock %}
+{% block content %}
+<div id="featuredCarousel" class="carousel slide carousel-fade" data-bs-ride="carousel">
+    <div class="carousel-inner">
+        {% for movie in trending_movies|slice:":5" %}
+          <div class="carousel-item {% if forloop.first %}active{% endif %}" data-bs-interval="5000">
+            <div class="carousel-image-wrapper">
+              <img src="{{ movie.thumbnail.url }}" class="carousel-image" alt="{{ movie.title }} ">
+            </div>
+            <div class="carousel-caption d-none d-md-block">
+                <h2>{{ movie.title }}</h2>
+                <p>{{ movie.description|truncatewords:30 }}</p>
+                <a href="{% url 'movie_detail' movie.id %}" class="btn btn-lg btn-primary">
+                    <i class="fas fa-play me-2"></i>Xem ngay
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    <button class="carousel-control-prev" type="button" data-bs-target="#featuredCarousel" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Trước</span>
+    </button>
+    <button class="carousel-control-next" type="button" data-bs-target="#featuredCarousel" data-bs-slide="next">
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Tiếp theo</span>
+    </button>
+</div>
+
+<div class="container mt-5">
+    <h2 class="mb-4">Nổi bật</h2>
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4 mb-5">
+        {% for movie in trending_movies %}
+        <div class="col">
+            <div class="movie-card">
+                <img src="{{ movie.thumbnail.url }}" alt="{{ movie.title }}" class="img-fluid">
+                <div class="movie-info">
+                    <h5 class="card-title mb-2">{{ movie.title }}</h5>
+                    <p class="card-text small mb-2">{{ movie.description|truncatewords:10 }}</p>
+                    <div class="d-flex justify-content-between align-items-center movie-stats mb-3">
+                        <span><i class="bi bi-star-fill me-1"></i> {{ movie.average_rating }}</span>
+                        <span><i class="bi bi-hand-thumbs-up-fill me-1"></i> {{ movie.like_count }}</span>
+                    </div>
+                    <a href="{% url 'movie_detail' movie.id %}" class="btn btn-primary watch-btn w-100">
+                        <i class="fas fa-play me-2"></i>Xem ngay
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if user.is_authenticated and recommended_movies %}
+    <h2 class="mb-4">Gợi ý cho bạn</h2>
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4 mb-5">
+        {% for movie in recommended_movies %}
+        <div class="col">
+            <div class="movie-card">
+                <img src="{{ movie.thumbnail.url }}" alt="{{ movie.title }}" class="img-fluid">
+                <div class="movie-info">
+                    <h5 class="card-title mb-2">{{ movie.title }}</h5>
+                    <p class="card-text small mb-2">{{ movie.description|truncatewords:10 }}</p>
+                    <div class="d-flex justify-content-between align-items-center movie-stats mb-3">
+                        <span><i class="bi bi-star-fill me-1"></i> {{ movie.average_rating|floatformat:1 }}</span>
+                        <span><i class="bi bi-hand-thumbs-up-fill me-1"></i> {{ movie.like_count }}</span>
+                    </div>
+                    <a href="{% url 'movie_detail' movie.id %}" class="btn btn-primary watch-btn w-100">
+                        <i class="fas fa-play me-2"></i>Xem ngay
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <h2 class="mb-4">Tất cả phim</h2>
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+        {% for movie in movies %}
+        <div class="col">
+            <div class="movie-card">
+                <img src="{{ movie.thumbnail.url }}" alt="{{ movie.title }}" class="img-fluid">
+                <div class="movie-info">
+                    <h5 class="card-title mb-2">{{ movie.title }}</h5>
+                    <p class="card-text small mb-2">{{ movie.description|truncatewords:10 }}</p>
+                    <div class="d-flex justify-content-between align-items-center movie-stats mb-3">
+                        <span><i class="bi bi-star-fill me-1"></i> {{ movie.average_rating }}</span>
+                        <span><i class="bi bi-hand-thumbs-up-fill me-1"></i> {{ movie.like_count }}</span>
+                    </div>
+                    <a href="{% url 'movie_detail' movie.id %}" class="btn btn-primary watch-btn w-100">
+                        <i class="fas fa-play me-2"></i>Xem ngay
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+   
+{% endblock %}
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var carousel = new bootstrap.Carousel(document.querySelector('#featuredCarousel'), {
+            interval: 10,
+            ride: true
+        });
+    
+        document.querySelector('#featuredCarousel').addEventListener('slide.bs.carousel', function (e) {
+            var activeItem = this.querySelector('.active');
+            var nextItem = e.relatedTarget;
+            
+            activeItem.style.transition = 'opacity 0.6s ease-in-out, transform 0.6s ease-in-out, filter 0.6s ease-in-out';
+            nextItem.style.transition = 'opacity 0.6s ease-in-out, transform 0.6s ease-in-out, filter 0.6s ease-in-out';
+            
+            activeItem.style.opacity = '0';
+            activeItem.style.transform = 'scale(0.95)';
+            activeItem.style.filter = 'blur(5px)';
+            
+            nextItem.style.opacity = '1';
+            nextItem.style.transform = 'scale(1)';
+            nextItem.style.filter = 'blur(0)';
+        });
+    });
+    </script>
