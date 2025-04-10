@@ -9,6 +9,8 @@ from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.apps import AppConfig
 from django.shortcuts import render, get_object_or_404
+from .models import Movie
+from django.db.models import Q
 
 
 class HomeView(ListView):
@@ -160,3 +162,13 @@ class MovieTrailerView(DetailView):
             related.average_rating = related.get_average_rating()
         context['related_movies'] = related_movies
         return context
+    
+def search_movies(request):
+    query = request.GET.get('q')
+    if query:
+        movies = Movie.objects.filter(
+            Q(title__icontains=query) | Q(description__icontains=query)
+        )
+    else:
+        movies = []
+    return render(request, 'search_results.html', {'movies': movies, 'query': query})

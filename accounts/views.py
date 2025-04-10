@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .forms import UserProfileForm, UserCreationForm
 
+
 @login_required
 def my_account(request):
     if request.method == 'POST':
@@ -40,3 +41,5 @@ def register(request):
     else:
         form = UserCreationForm()
     return render(request, 'register.html', {'form': form})
+
+

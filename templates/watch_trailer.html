@@ -1,69 +1,59 @@
 {% extends 'base.html' %}
-
-{% block title %}{{ movie.title }} - Trailer | Mẹt Phim{% endblock %}
+{% block title %}{{ movie.title }} - Trailer{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
-    <div class="mb-4">
-        <a href="{% url 'movie_detail' movie.id %}" class="btn btn-secondary">&larr; Quay lại phim</a>
+<!-- Thanh điều hướng -->
+<div class="movie-navigation py-3" style="margin-top: 80px;">
+    <div class="container">
+        <div class="navigation-content d-flex align-items-center justify-content-between flex-wrap">
+            <a href="{% url 'movie_detail' movie.id %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Quay lại thông tin phim
+            </a>
+            <h1 class="movie-header-title h4 m-0">{{ movie.title }} - Trailer</h1>
+        </div>
+    </div>
+</div>
+
+<!-- Phần xem trailer -->
+<div class="container movie-content-container">
+    <div class="video-player-wrapper">
+        {% if movie.trailer_link %}
+        <iframe src="{{ movie.trailer_link }}" class="main-video-player"
+            frameborder="0" allowfullscreen>
+        </iframe>
+        {% else %}
+        <div class="no-video-message">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            <h3>Không có trailer</h3>
+            <p>Rất tiếc, phim này hiện không có trailer. Vui lòng thử lại sau.</p>
+        </div>
+        {% endif %}
     </div>
 
-    <div class="row">
-        <div class="col-md-8">
-            <div class="mb-4">
-                <h2 class="text-white">{{ movie.title }} - Trailer</h2>
-
-                {% if movie.youtube_embed_url %}
-                <div class="ratio ratio-16x9 mb-3">
-                    <iframe 
-                        src="{{ movie.youtube_embed_url }}" 
-                        title="YouTube video player"
-                        frameborder="0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                        allowfullscreen>
-                    </iframe>
-                </div>
-
-                {% elif movie.trailer_file %}
-                <video class="w-100 rounded shadow" controls autoplay>
-                    <source src="{{ movie.trailer_file.url }}" type="video/mp4">
-                    Trình duyệt không hỗ trợ video.
-                </video>
-
-                {% else %}
-                <div class="alert alert-warning">Không có trailer được tải lên cho phim này.</div>
-                {% endif %}
+    <!-- Thông tin phim -->
+    <div class="video-info-section">
+        <div class="content-card description-card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="bi bi-info-circle"></i>
+                    Thông tin phim
+                </h3>
             </div>
-
-            <div class="card bg-dark text-white mb-4">
-                <div class="card-body">
-                    <h3 class="card-title">Về phim</h3>
-                    <p>{{ movie.description }}</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Related Movies -->
-        <div class="col-md-4">
-            <div class="card bg-dark text-white">
-                <div class="card-body">
-                    <h4 class="card-title">Phim liên quan</h4>
-                    {% if related_movies %}
-                        {% for related_movie in related_movies %}
-                        <a href="{% url 'movie_detail' related_movie.id %}" class="d-flex align-items-center mb-3 text-decoration-none text-white">
-                            <img src="{{ related_movie.thumbnail.url }}" alt="{{ related_movie.title }}" class="me-3 rounded" width="60" height="90">
-                            <div>
-                                <h6 class="mb-1">{{ related_movie.title }}</h6>
-                                <div class="small text-muted">
-                                    <i class="bi bi-star-fill text-warning"></i> {{ related_movie.average_rating|floatformat:1 }}
-                                    <i class="bi bi-hand-thumbs-up-fill text-info ms-3"></i> {{ related_movie.like_count }}
-                                </div>
-                            </div>
-                        </a>
-                        {% endfor %}
-                    {% else %}
-                        <p class="text-muted">Không có phim liên quan được tìm thấy.</p>
-                    {% endif %}
+            <div class="card-body">
+                <p class="movie-description">{{ movie.description }}</p>
+                <div class="movie-meta">
+                    <div class="meta-item">
+                        <span class="meta-label">Thể loại:</span>
+                        <span class="meta-value">
+                            {% for genre in movie.genres.all %}
+                            <span class="genre-pill">{{ genre.name }}</span>
+                            {% endfor %}
+                        </span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Ngày phát hành:</span>
+                        <span class="meta-value">{{ movie.release_date }}</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -71,8 +61,113 @@
 </div>
 
 <style>
-    .comment-block {
-        border-left: 4px solid #007bff;
+    .video-player-wrapper {
+        width: 100%;
+        background: #000;
+        position: relative;
+        border-radius: var(--border-radius);
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        margin-bottom: 2rem;
+    }
+
+    .main-video-player {
+        width: 100%;
+        display: block;
+        aspect-ratio: 16/9;
+        border: none;
+    }
+
+    .no-video-message {
+        aspect-ratio: 16/9;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: rgba(220, 53, 69, 0.1);
+        color: var(--text-light);
+        padding: 3rem;
+        text-align: center;
+    }
+
+    .no-video-message i {
+        font-size: 4rem;
+        color: var(--primary-color);
+        margin-bottom: 1.5rem;
+    }
+
+    .no-video-message h3 {
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .no-video-message p {
+        opacity: 0.7;
+    }
+
+    .content-card {
+        background: var(--card-bg);
+        border-radius: var(--border-radius);
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    }
+
+    .card-header {
+        background: rgba(0, 0, 0, 0.2);
+        padding: 1rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .card-title {
+        margin: 0;
+        font-size: 1.2rem;
+        display: flex;
+        align-items: center;
+    }
+
+    .card-title i {
+        margin-right: 0.5rem;
+        color: var(--primary-color);
+    }
+
+    .card-body {
+        padding: 1.5rem;
+    }
+
+    .movie-description {
+        margin-bottom: 1.5rem;
+        line-height: 1.6;
+    }
+
+    .movie-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .meta-item {
+        display: flex;
+        align-items: flex-start;
+    }
+
+    .meta-label {
+        min-width: 120px;
+        color: var(--text-muted);
+    }
+
+    .meta-value {
+        flex: 1;
+    }
+
+    .genre-pill {
+        display: inline-block;
+        background: rgba(255, 255, 255, 0.1);
+        padding: 0.25rem 0.75rem;
+        border-radius: 50px;
+        margin-right: 0.5rem;
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
     }
 </style>
 {% endblock %}

@@ -24,6 +24,7 @@ class Movie(models.Model):
     trailer_link = models.URLField(null=True, blank=True)
     youtube_embed_url = models.URLField(blank=True, null=True)
 
+    
 
     def get_like_count(self):
         return self.like_set.count()

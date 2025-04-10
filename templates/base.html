@@ -296,26 +296,32 @@
         }
 
         .carousel-caption {
-            bottom: 20%;
-            text-align: left;
-            max-width: 550px;
-            left: 15%;
-            background: rgba(0, 0, 0, 0.5);
-            border-radius: var(--border-radius);
-            padding: 30px;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            text-align: center;
+            max-width: 100%;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.4), transparent);
+            border-radius: 0;
+            padding: 30px 20px;
+            backdrop-filter: blur(5px);
         }
 
         .carousel-caption h2 {
-            font-size: 2.5rem;
+            font-size: 2.2rem;
             font-weight: 700;
-            margin-bottom: 1rem;
+            margin-bottom: 0.8rem;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
         }
 
         .carousel-caption p {
-            font-size: 1.2rem;
-            margin-bottom: 1.5rem;
+            font-size: 1.1rem;
+            margin-bottom: 1.2rem;
             text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+            opacity: 0.9;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
         }
 
         /* Genre Buttons */
@@ -522,6 +528,116 @@
                 font-size: 0.9rem;
             }
         }
+
+        /* Search Bar Styling */
+        .search-form {
+            position: relative;
+            flex: 1;
+            max-width: 500px;
+        }
+
+        .search-wrapper {
+            position: relative;
+            width: 100%;
+            display: flex;
+            align-items: center;
+        }
+
+        .search-input {
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: var(--text-light);
+            border-radius: 50px;
+            padding: 0.5rem 1.5rem;
+            font-family: 'Roboto', sans-serif;
+            transition: all var(--transition-speed);
+            width: 100%;
+            padding-right: 45px;
+        }
+
+        .search-input:focus {
+            background-color: rgba(255, 255, 255, 0.15);
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.25rem rgba(255, 71, 87, 0.25);
+            color: var(--text-light);
+        }
+
+        .search-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .search-btn {
+            position: absolute;
+            right: 5px;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 0.5rem;
+            border-radius: 50%;
+            transition: all var(--transition-speed);
+        }
+
+        .search-btn:hover {
+            color: var(--primary-color);
+            transform: scale(1.1);
+        }
+
+        .search-btn i {
+            font-size: 1.1rem;
+        }
+
+        /* Watch Button Styling */
+        .watch-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 0.75rem 1.5rem;
+            font-weight: 500;
+            transition: all var(--transition-speed);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            box-shadow: 0 4px 6px rgba(255, 71, 87, 0.2);
+        }
+
+        .watch-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-3px);
+            box-shadow: 0 7px 14px rgba(255, 71, 87, 0.3);
+            color: white;
+        }
+
+        .watch-btn i {
+            margin-right: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        /* Carousel Watch Button */
+        .carousel-caption .watch-btn {
+            padding: 0.8rem 1.8rem;
+            font-size: 1rem;
+            max-width: 180px;
+            margin: 0 auto;
+            background: rgba(255, 71, 87, 0.9);
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .carousel-caption .watch-btn:hover {
+            transform: translateY(-3px);
+            background: var(--primary-color);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Movie Card Watch Button */
+        .movie-info .watch-btn {
+            width: 100%;
+            margin-top: 0.5rem;
+            padding: 0.6rem 1.2rem;
+            font-size: 0.95rem;
+        }
     </style>
     {% block additional_styles %}{% endblock %}
 </head>
@@ -546,6 +662,12 @@
     <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
         <div class="container">
             <a class="navbar-brand" href="{% url 'home' %}">Mẹt Phim</a>
+            <form class="d-flex search-form me-3" method="get" action="{% url 'search_movies' %}">
+                <div class="search-wrapper">
+                    <input class="form-control search-input" type="search" name="q" placeholder="Tìm phim, diễn viên..." aria-label="Search">
+                    <button class="btn search-btn" type="submit"><i class="bi bi-search"></i></button>
+                </div>
+            </form>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
