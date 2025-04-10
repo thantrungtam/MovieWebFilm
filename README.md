@@ -15,6 +15,7 @@ A Django-based movie streaming platform that replicates core Netflix functionali
 - Like/Unlike movies
 - Comment on movies
 - Create and manage personal watchlists
+- Admin page
 
 ### Personalization
 - Personalized movie recommendations based on user preferences
@@ -45,7 +46,7 @@ A Django-based movie streaming platform that replicates core Netflix functionali
 
 ### Database
 - SQLite (default)
-
+- MySQL
 ## 📋 Prerequisites
 
 - Python 3.x
@@ -62,8 +63,10 @@ cd MovieWebFilm
 3. Create and activate virtual environment
 ```bash
 python -m venv venv
-# On Mac:  source venv/bin/activate
-# On Windows: venv\Scripts\activate
+# On Mac:
+source venv/bin/activate
+# On Windows:
+venv\Scripts\activate
 ```
 4. Install dependencies
 ```bash
