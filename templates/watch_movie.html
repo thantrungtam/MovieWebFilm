@@ -1,110 +1,949 @@
 {% extends 'base.html' %}
-{% block title %}{{ movie.title }} - Xem{% endblock %}
+{% block title %}{{ movie.title }} - Xem Phim{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
-    <div class="mb-4">
-        <a href="{% url 'movie_detail' movie.id %}" class="btn btn-secondary">&larr; Quay lại phim</a>
+<!-- Thanh điều hướng -->
+<div class="movie-navigation">
+    <div class="container">
+        <div class="navigation-content">
+            <a href="{% url 'movie_detail' movie.id %}" class="back-button">
+                <i class="bi bi-arrow-left"></i> Quay lại thông tin phim
+            </a>
+            <h1 class="movie-header-title">{{ movie.title }}</h1>
+        </div>
+    </div>
+</div>
+
+<!-- Phần xem phim chính -->
+<div class="container movie-content-container">
+    Trình phát video
+    <div class="video-player-wrapper">
+        {% if movie.video_file %}
+        <video class="main-video-player" controls autoplay>
+            <source src="{{ movie.video_file.url }}" type="video/mp4">
+            Trình duyệt không hỗ trợ video.
+        </video>
+        {% elif movie.streaming_link %}
+        <iframe src="https://player.phimapi.com/player/?url={{ movie.streaming_link }}" class="main-video-player"
+            frameborder="0" allowfullscreen>
+        </iframe>
+        {% else %}
+        <div class="no-video-message">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            <h3>Không có nguồn phát video</h3>
+            <p>Rất tiếc, phim này hiện không có nguồn phát. Vui lòng thử lại sau.</p>
+        </div>
+        {% endif %}
     </div>
 
-
-            {% if movie.video_file %}
-            <video class="w-100 rounded shadow" controls autoplay>
-                <source src="{{ movie.video_file.url }}" type="video/mp4">
-                Trình duyệt không hỗ trợ video.
-            </video>
-        {% elif movie.streaming_link %}
-            <iframe src="https://player.phimapi.com/player/?url={{ movie.streaming_link }}" 
-                    class="w-100 rounded shadow"
-                    height="500"
-                    frameborder="0" 
-                    allowfullscreen>
-            </iframe>
-        {% else %}
-            <div class="alert alert-danger">Không có nguồn phát video.</div>
-        {% endif %}
-        
-
-            <!-- Movie Description -->
-            <div class="card bg-dark text-white mb-4">
-                <div class="card-body">
-                    <h3 class="card-title">Về phim</h3>
-                    <p>{{ movie.description }}</p>
+    <!-- Thông tin và tương tác video -->
+    <div class="video-info-section">
+        <div class="row">
+            <!-- Bên trái - Thông tin phim và đánh giá -->
+            <div class="col-lg-8">
+                <!-- Thông tin mô tả phim -->
+                <div class="content-card description-card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="bi bi-info-circle"></i>
+                            Mô tả phim
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <p class="movie-description">{{ movie.description }}</p>
+                        <div class="movie-meta">
+                            <div class="meta-item">
+                                <span class="meta-label">Thể loại:</span>
+                                <span class="meta-value">
+                                    {% for genre in movie.genres.all %}
+                                    <span class="genre-pill">{{ genre.name }}</span>
+                                    {% endfor %}
+                                </span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-label">Ngày phát hành:</span>
+                                <span class="meta-value">{{ movie.release_date }}</span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-label">Đánh giá:</span>
+                                <span class="meta-value">
+                                    <div class="inline-rating">
+                                        {% for i in "12345" %}
+                                        <i
+                                            class="bi bi-star-fill{% if forloop.counter <= movie.average_rating %} active{% endif %}"></i>
+                                        {% endfor %}
+                                        <span class="rating-number">{{ movie.average_rating|floatformat:1 }}/5</span>
+                                    </div>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </div>
 
-            <!-- Rating Section -->
-            <div class="card bg-dark text-white mb-4">
-                <div class="card-body">
-                    <h3 class="card-title">Đánh giá của phim</h3>
-                    <form method="post" action="{% url 'rate_movie' movie.id %}">
-                        {% csrf_token %}
-                        <input type="hidden" name="next" value="{{ request.path }}">
-                        <div class="star-rating mb-3">
-                            {% for i in "54321" %}
-                            <input type="radio" id="star{{ i }}" name="rating" value="{{ i }}">
-                            <label for="star{{ i }}"><i class="bi bi-star-fill"></i></label>
+                <!-- Đánh giá phim -->
+                <div class="content-card rating-card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="bi bi-star"></i>
+                            Đánh giá phim
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <form method="post" action="{% url 'rate_movie' movie.id %}" class="rating-form">
+                            {% csrf_token %}
+                            <input type="hidden" name="next" value="{{ request.path }}">
+                            <div class="star-rating">
+                                {% for i in "54321" %}
+                                <input type="radio" id="star{{ i }}" name="rating" value="{{ i }}">
+                                <label for="star{{ i }}"><i class="bi bi-star-fill"></i></label>
+                                {% endfor %}
+                            </div>
+                            <button type="submit" class="submit-btn">
+                                <i class="bi bi-check2-circle"></i>
+                                Xác nhận đánh giá
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Bình luận phim -->
+                <div class="content-card comments-card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="bi bi-chat-square-text"></i>
+                            Bình luận phim
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        {% if movie.comments.all %}
+                        <div class="comments-container">
+                            {% for comment in movie.comments.all %}
+                            <div class="comment-block">
+                                <div class="comment-header">
+                                    <div class="user-info">
+                                        {% if comment.user.profile.profile_photo %}
+                                        <img src="{{ comment.user.profile.profile_photo.url }}"
+                                            alt="{{ comment.user.username }}" class="user-avatar">
+                                        {% else %}
+                                        <div class="default-avatar">
+                                            {{ comment.user.username|make_list|first|upper }}
+                                        </div>
+                                        {% endif %}
+                                        <h6 class="username">{{ comment.user.username }}</h6>
+                                    </div>
+                                    <div class="comment-date">
+                                        <i class="bi bi-clock"></i>
+                                        <span>{{ comment.created_at|date:"d/m/Y" }}</span>
+                                    </div>
+                                </div>
+                                <div class="comment-content">
+                                    <p>{{ comment.content }}</p>
+                                </div>
+                            </div>
                             {% endfor %}
                         </div>
-                        <button type="submit" class="btn btn-primary">Đánh giá</button>
-                    </form>
-                </div>
-            </div>
-
-            <!-- Comments Section -->
-            <div class="card bg-dark text-white mb-4">
-                <div class="card-body">
-                    <h3 class="card-title">Comments</h3>
-                    {% if movie.comments.all %}
-                        {% for comment in movie.comments.all %}
-                        <div class="comment-block bg-secondary p-3 rounded mb-3">
-                            <strong>{{ comment.user.username }}</strong>
-                            <small class="text-muted float-end">{{ comment.created_at|date:"F d, Y" }}</small>
-                            <p class="mb-0 mt-2">{{ comment.content }}</p>
+                        {% else %}
+                        <div class="no-comments">
+                            <i class="bi bi-chat-square"></i>
+                            <p>Chưa có bình luận nào. Hãy là người đầu tiên bình luận!</p>
                         </div>
-                        {% endfor %}
-                    {% else %}
-                        <p class="text-muted">Không có bình luận. Hãy là người để lại bình luận đầu tiên!</p>
-                    {% endif %}
+                        {% endif %}
+
+                        <!-- Form thêm bình luận -->
+                        <div class="add-comment-section">
+                            <h4><i class="bi bi-pencil-square"></i> Thêm bình luận mới</h4>
+                            <form method="post" action="{% url 'comment_movie' movie.id %}" class="comment-form">
+                                {% csrf_token %}
+                                <input type="hidden" name="next" value="{{ request.path }}">
+                                <textarea name="content" class="comment-textarea" rows="3"
+                                    placeholder="Viết bình luận của bạn..."></textarea>
+                                <button type="submit" class="submit-btn">
+                                    <i class="bi bi-send"></i>
+                                    Gửi bình luận
+                                </button>
+                            </form>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Add Comment -->
-            <div class="card bg-dark text-white mb-4">
-                <div class="card-body">
-                    <h3 class="card-title">Thêm bình luận</h3>
-                    <form method="post" action="{% url 'comment_movie' movie.id %}">
-                        {% csrf_token %}
-                        <input type="hidden" name="next" value="{{ request.path }}">
-                        <textarea name="content" class="form-control mb-3" rows="3" placeholder="Write your comment..."></textarea>
-                        <button type="submit" class="btn btn-primary">Gửi bình luận</button>
-                    </form>
+            <!-- Bên phải - Phim liên quan -->
+            <div class="col-lg-4">
+                <div class="content-card related-movies-card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="bi bi-film"></i>
+                            Phim khác có thể bạn thích
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        {% if related_movies %}
+                        <div class="related-movies-list">
+                            {% for related_movie in related_movies %}
+                            <div class="related-movie-item">
+                                <a href="{% url 'watch_movie' related_movie.id %}" class="related-movie-link">
+                                    <div class="related-movie-thumb">
+                                        <img src="{{ related_movie.thumbnail.url }}" alt="{{ related_movie.title }}">
+                                        <div class="play-overlay">
+                                            <i class="bi bi-play-circle"></i>
+                                        </div>
+                                    </div>
+                                    <div class="related-movie-info">
+                                        <h5 class="related-movie-title">{{ related_movie.title }}</h5>
+                                        <div class="related-movie-meta">
+                                            <span class="rating-meta">
+                                                <i class="bi bi-star-fill"></i>
+                                                {{ related_movie.average_rating|floatformat:1 }}
+                                            </span>
+                                            <span class="likes-meta">
+                                                <i class="bi bi-hand-thumbs-up-fill"></i>
+                                                {{ related_movie.like_count }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="no-related">
+                            <i class="bi bi-film"></i>
+                            <p>Không tìm thấy phim liên quan.</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Thẻ tương tác nhanh -->
+                <div class="content-card quick-actions-card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="bi bi-lightning-charge"></i>
+                            Tương tác nhanh
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="quick-actions">
+                            {% if user_liked %}
+                            <a href="{% url 'like_movie' movie.id %}" class="quick-action-btn unlike-btn">
+                                <i class="bi bi-hand-thumbs-down"></i>
+                                <span>Bỏ thích</span>
+                            </a>
+                            {% else %}
+                            <a href="{% url 'like_movie' movie.id %}" class="quick-action-btn like-btn">
+                                <i class="bi bi-hand-thumbs-up"></i>
+                                <span>Thích phim</span>
+                            </a>
+                            {% endif %}
+
+                            {% if user.is_authenticated %}
+                            {% if in_user_list %}
+                            <a href="{% url 'remove_from_list' movie.id %}" class="quick-action-btn remove-btn">
+                                <i class="bi bi-x-lg"></i>
+                                <span>Gỡ khỏi danh sách</span>
+                            </a>
+                            {% else %}
+                            <a href="{% url 'add_to_list' movie.id %}" class="quick-action-btn add-btn">
+                                <i class="bi bi-plus-lg"></i>
+                                <span>Thêm vào danh sách</span>
+                            </a>
+                            {% endif %}
+                            {% endif %}
+
+                            <a href="{% url 'watch_trailer' movie.id %}" class="quick-action-btn trailer-btn">
+                                <i class="bi bi-camera-video"></i>
+                                <span>Xem trailer</span>
+                            </a>
+
+                            <a href="{% url 'movie_detail' movie.id %}" class="quick-action-btn info-btn">
+                                <i class="bi bi-info-circle"></i>
+                                <span>Chi tiết phim</span>
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-
-       
+    </div>
+</div>
 
 <style>
+    :root {
+        --primary-color: #ff4757;
+        --primary-light: #ff6b81;
+        --primary-dark: #ff1f34;
+        --secondary-color: #1e90ff;
+        --dark-bg: #1e272e;
+        --card-bg: #2d3436;
+        --text-light: #f1f1f1;
+        --text-muted: #a4b0be;
+        --border-radius: 12px;
+        --transition-speed: 0.3s;
+    }
+
+    body {
+        background-color: #131921;
+        color: var(--text-light);
+    }
+
+    /* Thanh điều hướng */
+    .movie-navigation {
+        background-color: rgba(0, 0, 0, 0.6);
+        padding: 1rem 0;
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+    }
+
+    .navigation-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .back-button {
+        display: inline-flex;
+        align-items: center;
+        color: var(--text-light);
+        background-color: rgba(255, 71, 87, 0.2);
+        border: 1px solid var(--primary-color);
+        padding: 0.5rem 1.2rem;
+        border-radius: 50px;
+        font-weight: 500;
+        transition: all var(--transition-speed);
+        text-decoration: none;
+    }
+
+    .back-button:hover {
+        background-color: var(--primary-color);
+        transform: translateX(-5px);
+        color: white;
+    }
+
+    .back-button i {
+        margin-right: 0.5rem;
+    }
+
+    .movie-header-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin: 0;
+        background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+    }
+
+    /* Container chính */
+    .movie-content-container {
+        padding: 2rem 0;
+    }
+
+    /* Trình phát video */
+    .video-player-wrapper {
+        width: 100%;
+        background: #000;
+        position: relative;
+        border-radius: var(--border-radius);
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        margin-bottom: 2rem;
+    }
+
+    .main-video-player {
+        width: 100%;
+        display: block;
+        aspect-ratio: 16/9;
+        border: none;
+    }
+
+    .no-video-message {
+        aspect-ratio: 16/9;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: rgba(220, 53, 69, 0.1);
+        color: var(--text-light);
+        padding: 3rem;
+        text-align: center;
+    }
+
+    .no-video-message i {
+        font-size: 4rem;
+        color: var(--primary-color);
+        margin-bottom: 1.5rem;
+    }
+
+    .no-video-message h3 {
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .no-video-message p {
+        opacity: 0.7;
+    }
+
+    /* Phần thông tin */
+    .video-info-section {
+        margin-top: 1rem;
+    }
+
+    /* Card styles */
+    .content-card {
+        background: var(--card-bg);
+        border-radius: var(--border-radius);
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    }
+
+    .card-header {
+        padding: 1.25rem 1.5rem;
+        background: rgba(0, 0, 0, 0.2);
+        border-bottom: 2px solid var(--primary-color);
+    }
+
+    .card-title {
+        display: flex;
+        align-items: center;
+        margin: 0;
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--text-light);
+    }
+
+    .card-title i {
+        margin-right: 0.75rem;
+        color: var(--primary-color);
+    }
+
+    .card-body {
+        padding: 1.5rem;
+    }
+
+    /* Mô tả phim */
+    .movie-description {
+        font-size: 1rem;
+        line-height: 1.7;
+        margin-bottom: 1.5rem;
+    }
+
+    .movie-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .meta-item {
+        display: flex;
+        align-items: flex-start;
+    }
+
+    .meta-label {
+        min-width: 120px;
+        font-weight: 600;
+        color: var(--primary-light);
+    }
+
+    .meta-value {
+        flex: 1;
+    }
+
+    .genre-pill {
+        display: inline-block;
+        background: rgba(30, 144, 255, 0.2);
+        color: var(--secondary-color);
+        padding: 0.2rem 0.8rem;
+        border-radius: 50px;
+        font-size: 0.8rem;
+        margin-right: 0.5rem;
+        margin-bottom: 0.5rem;
+        border: 1px solid var(--secondary-color);
+    }
+
+    /* Đánh giá */
+    .inline-rating {
+        display: flex;
+        align-items: center;
+    }
+
+    .inline-rating i {
+        color: #e4e5e9;
+        margin-right: 0.2rem;
+        font-size: 1.2rem;
+    }
+
+    .inline-rating i.active {
+        color: #ffc107;
+    }
+
+    .rating-number {
+        margin-left: 0.5rem;
+        font-weight: 600;
+    }
+
+    /* Form đánh giá */
+    .rating-form {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
     .star-rating {
         direction: rtl;
         display: inline-block;
-        font-size: 1.5rem;
+        margin-bottom: 1.5rem;
     }
+
     .star-rating input[type="radio"] {
         display: none;
     }
+
     .star-rating label {
         color: #e4e5e9;
+        font-size: 2.5rem;
+        padding: 0 0.15rem;
         cursor: pointer;
+        transition: all 0.2s ease;
     }
+
     .star-rating label:hover,
-    .star-rating label:hover ~ label,
-    .star-rating input[type="radio"]:checked ~ label {
+    .star-rating label:hover~label,
+    .star-rating input[type="radio"]:checked~label {
         color: #ffc107;
+        transform: scale(1.2);
+        text-shadow: 0 0 10px rgba(255, 193, 7, 0.5);
     }
+
+    .submit-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--primary-color);
+        color: white;
+        padding: 0.75rem 2rem;
+        border: none;
+        border-radius: 50px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all var(--transition-speed);
+    }
+
+    .submit-btn:hover {
+        background: var(--primary-dark);
+        transform: translateY(-3px);
+        box-shadow: 0 7px 14px rgba(255, 71, 87, 0.3);
+    }
+
+    .submit-btn i {
+        margin-right: 0.5rem;
+    }
+
+    /* Bình luận */
+    .comments-container {
+        max-height: 500px;
+        overflow-y: auto;
+        margin-bottom: 2rem;
+        padding-right: 0.5rem;
+    }
+
+    .comments-container::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .comments-container::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+    }
+
+    .comments-container::-webkit-scrollbar-thumb {
+        background: var(--primary-color);
+        border-radius: 10px;
+    }
+
     .comment-block {
-        border-left: 4px solid #007bff;
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: var(--border-radius);
+        margin-bottom: 1rem;
+        border-left: 4px solid var(--primary-color);
+        overflow: hidden;
+        transition: transform var(--transition-speed);
+    }
+
+    .comment-block:hover {
+        transform: translateX(5px);
+    }
+
+    .comment-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 1rem;
+        background: rgba(0, 0, 0, 0.2);
+    }
+
+    .user-info {
+        display: flex;
+        align-items: center;
+    }
+
+    .user-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-right: 0.75rem;
+        border: 2px solid var(--primary-color);
+    }
+
+    .default-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: var(--primary-color);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        margin-right: 0.75rem;
+    }
+
+    .username {
+        margin: 0;
+        font-weight: 600;
+    }
+
+    .comment-date {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        display: flex;
+        align-items: center;
+    }
+
+    .comment-date i {
+        margin-right: 0.3rem;
+    }
+
+    .comment-content {
+        padding: 1rem;
+    }
+
+    .comment-content p {
+        margin: 0;
+        line-height: 1.6;
+    }
+
+    .no-comments {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 2rem;
+        color: var(--text-muted);
+        text-align: center;
+    }
+
+    .no-comments i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.6;
+    }
+
+    /* Thêm bình luận */
+    .add-comment-section {
+        margin-top: 1rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        padding-top: 1.5rem;
+    }
+
+    .add-comment-section h4 {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1rem;
+        font-size: 1.1rem;
+        color: var(--text-light);
+    }
+
+    .add-comment-section h4 i {
+        margin-right: 0.5rem;
+        color: var(--primary-color);
+    }
+
+    .comment-form {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .comment-textarea {
+        width: 100%;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: var(--text-light);
+        border-radius: var(--border-radius);
+        padding: 1rem;
+        margin-bottom: 1rem;
+        resize: vertical;
+        min-height: 100px;
+        transition: border-color var(--transition-speed);
+    }
+
+    .comment-textarea:focus {
+        border-color: var(--primary-color);
+        outline: none;
+    }
+
+    .comment-textarea::placeholder {
+        color: var(--text-muted);
+    }
+
+    /* Phim liên quan */
+    .related-movies-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .related-movie-item {
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: var(--border-radius);
+        overflow: hidden;
+        transition: transform var(--transition-speed);
+    }
+
+    .related-movie-item:hover {
+        transform: translateY(-5px);
+    }
+
+    .related-movie-link {
+        display: flex;
+        color: var(--text-light);
+        text-decoration: none;
+    }
+
+    .related-movie-thumb {
+        width: 100px;
+        min-width: 100px;
+        height: 150px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .related-movie-thumb img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform var(--transition-speed);
+    }
+
+    .related-movie-link:hover .related-movie-thumb img {
+        transform: scale(1.1);
+    }
+
+    .play-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity var(--transition-speed);
+    }
+
+    .related-movie-link:hover .play-overlay {
+        opacity: 1;
+    }
+
+    .play-overlay i {
+        font-size: 2.5rem;
+        color: var(--primary-color);
+    }
+
+    .related-movie-info {
+        padding: 1rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        flex: 1;
+    }
+
+    .related-movie-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin: 0 0 0.5rem;
+    }
+
+    .related-movie-meta {
+        display: flex;
+        gap: 1rem;
+    }
+
+    .rating-meta,
+    .likes-meta {
+        display: flex;
+        align-items: center;
+        color: var(--text-muted);
+        font-size: 0.9rem;
+    }
+
+    .rating-meta i {
+        color: #ffc107;
+        margin-right: 0.3rem;
+    }
+
+    .likes-meta i {
+        color: var(--primary-color);
+        margin-right: 0.3rem;
+    }
+
+    .no-related {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 2rem;
+        color: var(--text-muted);
+        text-align: center;
+    }
+
+    .no-related i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.6;
+    }
+
+    /* Tương tác nhanh */
+    .quick-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+
+    .quick-action-btn {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 1.2rem 0.5rem;
+        border-radius: var(--border-radius);
+        color: var(--text-light);
+        text-decoration: none;
+        transition: all var(--transition-speed);
+        background: rgba(0, 0, 0, 0.2);
+    }
+
+    .quick-action-btn i {
+        font-size: 1.8rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .quick-action-btn span {
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    .like-btn:hover,
+    .unlike-btn:hover {
+        background: #3498db;
+        color: white;
+        transform: translateY(-5px);
+    }
+
+    .add-btn:hover {
+        background: #27ae60;
+        color: white;
+        transform: translateY(-5px);
+    }
+
+    .remove-btn:hover {
+        background: #e67e22;
+        color: white;
+        transform: translateY(-5px);
+    }
+
+    .trailer-btn:hover {
+        background: #9b59b6;
+        color: white;
+        transform: translateY(-5px);
+    }
+
+    .info-btn:hover {
+        background: var(--primary-color);
+        color: white;
+        transform: translateY(-5px);
+    }
+
+    /* Responsive */
+    @media (max-width: 992px) {
+        .video-player-wrapper {
+            margin-bottom: 1.5rem;
+        }
+
+        .movie-header-title {
+            font-size: 1.25rem;
+        }
+
+        .quick-actions {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .navigation-content {
+            flex-direction: column;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .movie-header-title {
+            align-self: flex-start;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+        }
+
+        .star-rating label {
+            font-size: 2rem;
+        }
+
+        .related-movie-thumb {
+            width: 80px;
+            min-width: 80px;
+            height: 120px;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .quick-actions {
+            grid-template-columns: 1fr;
+        }
+
+        .meta-item {
+            flex-direction: column;
+        }
+
+        .meta-label {
+            margin-bottom: 0.3rem;
+        }
+
+        .comment-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .comment-date {
+            margin-top: 0.5rem;
+            margin-left: 3.5rem;
+        }
+
+        .submit-btn {
+            width: 100%;
+        }
     }
 </style>
 {% endblock %}

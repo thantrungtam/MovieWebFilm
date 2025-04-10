@@ -4,9 +4,9 @@
 <div id="featuredCarousel" class="carousel slide carousel-fade" data-bs-ride="carousel">
     <div class="carousel-inner">
         {% for movie in trending_movies|slice:":5" %}
-          <div class="carousel-item {% if forloop.first %}active{% endif %}" data-bs-interval="5000">
+        <div class="carousel-item {% if forloop.first %}active{% endif %}" data-bs-interval="5000">
             <div class="carousel-image-wrapper">
-              <img src="{{ movie.thumbnail.url }}" class="carousel-image" alt="{{ movie.title }} ">
+                <img src="{{ movie.thumbnail.url }}" class="carousel-image" alt="{{ movie.title }} ">
             </div>
             <div class="carousel-caption d-none d-md-block">
                 <h2>{{ movie.title }}</h2>
@@ -100,30 +100,30 @@
         {% endfor %}
     </div>
 </div>
-   
+
 {% endblock %}
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         var carousel = new bootstrap.Carousel(document.querySelector('#featuredCarousel'), {
             interval: 10,
             ride: true
         });
-    
+
         document.querySelector('#featuredCarousel').addEventListener('slide.bs.carousel', function (e) {
             var activeItem = this.querySelector('.active');
             var nextItem = e.relatedTarget;
-            
+
             activeItem.style.transition = 'opacity 0.6s ease-in-out, transform 0.6s ease-in-out, filter 0.6s ease-in-out';
             nextItem.style.transition = 'opacity 0.6s ease-in-out, transform 0.6s ease-in-out, filter 0.6s ease-in-out';
-            
+
             activeItem.style.opacity = '0';
             activeItem.style.transform = 'scale(0.95)';
             activeItem.style.filter = 'blur(5px)';
-            
+
             nextItem.style.opacity = '1';
             nextItem.style.transform = 'scale(1)';
             nextItem.style.filter = 'blur(0)';
         });
     });
-    </script>
+</script>
