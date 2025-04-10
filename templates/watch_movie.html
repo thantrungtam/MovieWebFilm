@@ -1,18 +1,19 @@
 {% extends 'base.html' %}
 {% block title %}{{ movie.title }} - Xem Phim{% endblock %}
 
-{% block content %}
 <!-- Thanh điều hướng -->
-<div class="movie-navigation">
+<div class="movie-navigation py-3" style="margin-top: 80px;">
     <div class="container">
-        <div class="navigation-content">
-            <a href="{% url 'movie_detail' movie.id %}" class="back-button">
+        <div class="navigation-content d-flex align-items-center justify-content-between flex-wrap">
+            <a href="{% url 'movie_detail' movie.id %}" class="btn btn-outline-secondary" >
                 <i class="bi bi-arrow-left"></i> Quay lại thông tin phim
             </a>
-            <h1 class="movie-header-title">{{ movie.title }}</h1>
+            <h1 class="movie-header-title h4 m-0">{{ movie.title }}</h1>
         </div>
     </div>
 </div>
+{% block content %}
+
 
 <!-- Phần xem phim chính -->
 <div class="container movie-content-container">
