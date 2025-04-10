@@ -35,6 +35,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'jazzmin', #giao dien admin custom, phai dat tren cung neu khong dung admin default
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
