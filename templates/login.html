@@ -6,14 +6,19 @@
 <div class="container mt-5">
     <div class="row justify-content-center">
         <div class="col-md-6">
-            <div class="card">
-                <div class="card-body">
-                    <h2 class="card-title text-center mb-4">Đăng nhập</h2>
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <h2 class="card-title text-center mb-4 text-danger fw-bold">
+                        Đăng nhập
+                    </h2>
+
                     <form method="post">
                         {% csrf_token %}
                         {% for field in form %}
                             <div class="mb-3">
-                                <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                                <label for="{{ field.id_for_label }}" class="form-label fw-semibold">
+                                    {{ field.label }}
+                                </label>
                                 {{ field }}
                                 {% if field.errors %}
                                     <div class="invalid-feedback d-block">
@@ -22,17 +27,27 @@
                                 {% endif %}
                             </div>
                         {% endfor %}
-                        <div class="d-grid">
-                            <button type="submit" class="btn btn-primary btn-lg">
+
+                        <div class="d-grid mb-2">
+                            <button type="submit" class="btn btn-danger btn-lg">
                                 <i class="fas fa-sign-in-alt me-2"></i>Đăng nhập
                             </button>
                         </div>
-                        <div class="d-grid mt-3">
-                            <a class="btn btn-info btn-lg" href="{% url 'register' %}">
-                                <i class="fas fa-plus me-2"></i>Đăng kí
+
+                        <!-- Quên mật khẩu -->
+                        <div class="text-center mb-3">
+                            <a href="{% url 'password_reset' %}" class="text-decoration-none text-danger fw-medium">
+                                Quên mật khẩu?
+                            </a>
+                        </div>
+
+                        <div class="d-grid">
+                            <a class="btn btn-outline-secondary btn-lg text-danger" href="{% url 'register' %}">
+                                <i class="fas fa-user-plus me-2"></i>Đăng kí tài khoản
                             </a>
                         </div>
                     </form>
+
                     {% if form.non_field_errors %}
                         <div class="alert alert-danger mt-3">
                             <strong>Lỗi:</strong> {{ form.non_field_errors|join:", " }}
