@@ -21,7 +21,7 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'n22dcat047@student.ptithcm.edu.vn'
-EMAIL_HOST_PASSWORD = ''  # Không dùng password thường, phải là App Password
+EMAIL_HOST_PASSWORD = 'hpre czgr izdj xbqt'  # Không dùng password thường, phải là App Password
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 
@@ -55,12 +55,14 @@ INSTALLED_APPS = [
     'core',
     'user_interactions',
     'accounts',
+    'actor',
     'widget_tweaks',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -131,11 +133,13 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'vi'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Ho_Chi_Minh'
 
 USE_I18N = True
+
+USE_L10N = True
 
 USE_TZ = True
 

@@ -1,0 +1,196 @@
+{% extends 'base.html' %}
+{% block title %}Diễn viên - Mẹt Phim{% endblock %}
+{% block content %}
+<!-- Add spacer to prevent content from overlapping with navbar -->
+<div class="navbar-spacer"></div>
+
+<!-- Actor Header Section -->
+<div class="actor-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12 text-center">
+                <h1 class="actor-title">Diễn Viên Nổi Tiếng</h1>
+                <p class="actor-subtitle">Khám phá những diễn viên tài năng và bộ phim của họ</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Actor Grid Section -->
+<div class="container py-5">
+    <div class="row">
+        {% for actor in actors %}
+        <div class="col-md-2 mb-4">
+            <a href="{% url 'actor_detail' actor.pk %}" class="text-decoration-none">
+                <div class="card actor-card h-100">
+                    <img src="{{ actor.image.url }}" class="card-img-top" alt="{{ actor.name }}">
+                    <div class="actor-info">
+                        <h5 class="card-title">{{ actor.name }}</h5>
+                        {% if actor.alternate_name %}
+                        <h6 class="card-subtitle mb-2 text-muted">{{ actor.alternate_name }}</h6>
+                        {% endif %}
+                        {% if actor.gender %}
+                        <p class="card-text actor-gender">
+                            <span class="badge {% if actor.gender == 'Male' %}badge-male{% elif actor.gender == 'Female' %}badge-female{% else %}badge-other{% endif %}">
+                                {{ actor.gender }}
+                            </span>
+                        </p>
+                        {% endif %}
+                    </div>
+                </div>
+            </a>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center py-5">
+            <h3>Không có diễn viên nào.</h3>
+            <p>Vui lòng thêm diễn viên trong trang quản trị.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+    /* Spacer to prevent content from overlapping with fixed navbar */
+    .navbar-spacer {
+        height: 70px; /* Adjust height to match your navbar height */
+    }
+    
+    /* Variables */
+    :root {
+        --border-radius: 10px;
+        --transition-speed: 0.3s;
+        --text-light: #fff;
+        --primary-color: #ff375f;
+        --secondary-color: #1f1f1f;
+        --accent-color: #ff8a00;
+    }
+
+    /* Header Section */
+    .actor-header {
+        background: linear-gradient(135deg, var(--secondary-color) 0%, #111 100%);
+        padding: 50px 0;
+        margin-bottom: 20px;
+        color: var(--text-light);
+        border-bottom: 3px solid var(--primary-color);
+    }
+    
+    .actor-title {
+        font-size: 3rem;
+        font-weight: 700;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        margin-bottom: 15px;
+    }
+    
+    .actor-subtitle {
+        font-size: 1.2rem;
+        opacity: 0.9;
+    }
+
+    /* Actor Cards */
+    .actor-card {
+        position: relative;
+        width: 100%;
+        height: 0;
+        padding-top: 150%;
+        overflow: hidden;
+        border-radius: var(--border-radius);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        transition: transform var(--transition-speed), box-shadow var(--transition-speed);
+        border: none;
+    }
+
+    .actor-card:hover {
+        transform: translateY(-5px) scale(1.03);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .actor-card img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: filter var(--transition-speed);
+    }
+    
+    .actor-card:hover img {
+        filter: brightness(1.1);
+    }
+
+    .actor-info {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.7) 50%, transparent 100%);
+        padding: 20px;
+        color: var(--text-light);
+        transform: translateY(0);
+        transition: transform var(--transition-speed);
+    }
+
+    .actor-card:hover .actor-info {
+        transform: translateY(-10px);
+    }
+
+    .actor-info h5 {
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 5px;
+    }
+
+    .actor-info h6 {
+        font-size: 0.9rem;
+        opacity: 0.8;
+    }
+    
+    /* Gender Badges */
+    .badge {
+        padding: 5px 10px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+    
+    .badge-male {
+        background-color: #4a90e2;
+    }
+    
+    .badge-female {
+        background-color: #e24a84;
+    }
+    
+    .badge-other {
+        background-color: #9747FF;
+    }
+    
+    .actor-gender {
+        margin-top: 8px;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Add animation to actor cards when they come into view
+        const observerOptions = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.1
+        };
+        
+        const observer = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('fade-in');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+        
+        document.querySelectorAll('.col-md-2').forEach(card => {
+            observer.observe(card);
+        });
+    });
+</script>
+{% endblock %} 
