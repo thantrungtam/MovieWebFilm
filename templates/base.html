@@ -664,7 +664,7 @@
             <a class="navbar-brand" href="{% url 'home' %}">Mẹt Phim</a>
             <form class="d-flex search-form me-3" method="get" action="{% url 'search_movies' %}">
                 <div class="search-wrapper">
-                    <input class="form-control search-input" type="search" name="q" placeholder="Tìm phim, diễn viên..." aria-label="Search">
+                    <input class="form-control search-input" type="search" name="q" placeholder="Phim, diễn viên, thể loại..." aria-label="Search">
                     <button class="btn search-btn" type="submit"><i class="bi bi-search"></i></button>
                 </div>
             </form>
@@ -691,6 +691,12 @@
                             Bộ sưu tập
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'actor_list' %}">
+                            <i class="bi bi-people-fill me-1"></i>
+                            Diễn viên
+                        </a>
+                    </li>
                     {% if user.is_authenticated %}
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarDropdown"
@@ -709,6 +715,12 @@
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
                             <li><a class="dropdown-item" href="{% url 'my_account' %}">
                                     <i class="bi bi-person-circle me-2"></i>Tài khoản
+                                </a></li>
+                            <li><a class="dropdown-item" href="{% url 'view_user_list' %}">
+                                    <i class="bi bi-collection-play me-2"></i>Bộ sưu tập phim
+                                </a></li>
+                            <li><a class="dropdown-item" href="{% url 'favorite_actors' %}">
+                                    <i class="bi bi-people-fill me-2"></i>Diễn viên yêu thích
                                 </a></li>
                             <li>
                                 <hr class="dropdown-divider">

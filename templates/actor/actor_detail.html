@@ -1,0 +1,529 @@
+{% extends 'base.html' %}
+{% block title %}{{ actor.name }} - Mẹt Phim{% endblock %}
+{% block content %}
+<!-- Add spacer to prevent content from overlapping with navbar -->
+<div class="navbar-spacer"></div>
+
+<!-- Actor Header with Background -->
+<div class="actor-profile-header">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-4">
+                <div class="actor-profile-image">
+                    {% if actor.image %}
+                    <img src="{{ actor.image.url }}" alt="{{ actor.name }}" class="img-fluid">
+                    {% else %}
+                    <div class="default-actor-image">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-md-8">
+                <h1 class="actor-name">{{ actor.name }}</h1>
+                {% if actor.alternate_name %}
+                <p class="actor-alt-name">{{ actor.alternate_name }}</p>
+                {% endif %}
+                <div class="actor-meta">
+                    {% if actor.gender %}
+                    <span class="actor-badge {% if actor.gender == 'Male' %}badge-male{% elif actor.gender == 'Female' %}badge-female{% else %}badge-other{% endif %}">
+                        {{ actor.gender }}
+                    </span>
+                    {% endif %}
+                    {% if actor.birthdate %}
+                    <span class="actor-badge badge-birthdate">
+                        <i class="fas fa-birthday-cake mr-1"></i> {{ actor.birthdate|date:"d/m/Y" }}
+                    </span>
+                    {% endif %}
+                </div>
+                <div class="actor-actions mt-3">
+                    <button class="btn btn-primary" id="like-button"><i class="fas fa-heart"></i> Yêu thích</button>
+                    <button class="btn btn-secondary"><i class="fas fa-share-alt"></i> Chia sẻ</button>
+                    
+                    <!-- Hidden form for fallback -->
+                    <form id="fallback-like-form" method="post" action="/user_interactions/add_actor_to_list/{{ actor.id }}/" style="display: none;">
+                        {% csrf_token %}
+                        <input type="submit" value="Add to Favorites">
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Actor Details Section -->
+<div class="container py-5">
+    <div class="row">
+        <!-- Bio Section -->
+        <div class="col-md-4">
+            <div class="profile-card">
+                <h3 class="section-title">Thông tin</h3>
+                {% if actor.introduction %}
+                <div class="profile-section">
+                    <h4>Giới thiệu</h4>
+                    <p>{{ actor.introduction }}</p>
+                </div>
+                {% endif %}
+                
+                {% if actor.biography %}
+                <div class="profile-section">
+                    <h4>Tiểu sử</h4>
+                    <p>{{ actor.biography }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Movies Section -->
+        <div class="col-md-8">
+            <h3 class="section-title">Các phim đã tham gia</h3>
+            {% if actor.movies.all %}
+            <div class="row">
+                {% for movie in actor.movies.all %}
+                <div class="col-md-4 mb-4">
+                    <a href="{% url 'movie_detail' movie.id %}" class="movie-card-link">
+                        <div class="movie-card">
+                            <div class="movie-poster">
+                                <img src="{{ movie.thumbnail.url }}" alt="{{ movie.title }}">
+                            </div>
+                            <div class="movie-info">
+                                <h5>{{ movie.title }}</h5>
+                                <span class="movie-year">{{ movie.release_date|date:"Y" }}</span>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="no-movies">
+                <p>Không có thông tin về phim đã tham gia.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Spacer to prevent content from overlapping with fixed navbar */
+    .navbar-spacer {
+        height: 70px; /* Adjust height to match your navbar height */
+    }
+    
+    /* Variables */
+    :root {
+        --border-radius: 10px;
+        --transition-speed: 0.3s;
+        --text-light: #fff;
+        --primary-color: #ff375f;
+        --secondary-color: #1f1f1f;
+        --accent-color: #ff8a00;
+    }
+    
+    /* Actor Profile Header */
+    .actor-profile-header {
+        background: linear-gradient(135deg, var(--secondary-color) 0%, #111 100%);
+        color: white;
+        padding: 50px 0;
+        margin-bottom: 30px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+    
+    .actor-profile-image {
+        position: relative;
+        border-radius: 50%;
+        overflow: hidden;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+        width: 250px;
+        height: 250px;
+        margin: 0 auto;
+        border: 5px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .actor-profile-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .default-actor-image {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 6rem;
+        background-color: var(--secondary-color);
+    }
+    
+    .actor-name {
+        font-size: 3rem;
+        font-weight: 700;
+        margin-bottom: 5px;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    }
+    
+    .actor-alt-name {
+        font-size: 1.5rem;
+        opacity: 0.8;
+        margin-bottom: 15px;
+    }
+    
+    .actor-meta {
+        margin-bottom: 20px;
+    }
+    
+    .actor-badge {
+        display: inline-block;
+        padding: 6px 15px;
+        border-radius: 30px;
+        margin-right: 10px;
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+    
+    .badge-male {
+        background-color: #4a90e2;
+    }
+    
+    .badge-female {
+        background-color: #e24a84;
+    }
+    
+    .badge-other {
+        background-color: #9747FF;
+    }
+    
+    .badge-birthdate {
+        background-color: #6c757d;
+    }
+    
+    .actor-actions .btn {
+        margin-right: 10px;
+        padding: 8px 20px;
+        border-radius: 30px;
+        transition: all 0.3s ease;
+    }
+    
+    .actor-actions .btn-primary {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+    }
+    
+    .actor-actions .btn-primary:hover {
+        background-color: #ff1a4b;
+    }
+    
+    .actor-actions .btn-secondary {
+        background-color: #6c757d;
+    }
+    
+    /* Profile Card */
+    .profile-card {
+        background-color: #1e1e1e;
+        border-radius: var(--border-radius);
+        padding: 25px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        color: white;
+        margin-bottom: 30px;
+    }
+    
+    .section-title {
+        font-size: 1.8rem;
+        font-weight: 600;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid var(--primary-color);
+        color: white;
+    }
+    
+    .profile-section {
+        margin-bottom: 25px;
+    }
+    
+    .profile-section h4 {
+        font-size: 1.2rem;
+        color: var(--accent-color);
+        margin-bottom: 10px;
+    }
+    
+    .profile-section p {
+        font-size: 1rem;
+        line-height: 1.6;
+    }
+    
+    /* Movie Cards */
+    .movie-card-link {
+        text-decoration: none;
+        color: inherit;
+        display: block;
+    }
+    
+    .movie-card {
+        background-color: #2a2a2a;
+        border-radius: var(--border-radius);
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        transition: transform var(--transition-speed), box-shadow var(--transition-speed);
+        height: 100%;
+    }
+    
+    .movie-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    }
+    
+    .movie-poster {
+        height: 250px;
+        overflow: hidden;
+    }
+    
+    .movie-poster img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform var(--transition-speed);
+    }
+    
+    .movie-card:hover .movie-poster img {
+        transform: scale(1.05);
+    }
+    
+    .movie-info {
+        padding: 15px;
+        color: white;
+    }
+    
+    .movie-info h5 {
+        font-size: 1.1rem;
+        margin-bottom: 5px;
+        font-weight: 600;
+    }
+    
+    .movie-year {
+        display: inline-block;
+        background-color: var(--primary-color);
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 0.8rem;
+    }
+    
+    .no-movies {
+        background-color: #2a2a2a;
+        padding: 20px;
+        border-radius: var(--border-radius);
+        text-align: center;
+        color: white;
+    }
+
+    .toast-notification {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background-color: rgba(46, 125, 50, 0.9);
+        color: white;
+        padding: 12px 20px;
+        border-radius: 4px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        z-index: 9999;
+        transform: translateY(100px);
+        opacity: 0;
+        transition: all 0.3s ease-in-out;
+    }
+
+    .toast-notification.toast-remove {
+        background-color: rgba(211, 47, 47, 0.9);
+    }
+
+    .toast-notification.show {
+        transform: translateY(0);
+        opacity: 1;
+    }
+
+    .toast-notification i {
+        margin-right: 8px;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const likeButton = document.getElementById('like-button');
+        const actorId = "{{ actor.id }}";
+        
+        // Check if actor is already in user's list
+        function checkActorInList() {
+            console.log('Checking if actor is in list. Actor ID:', actorId);
+            fetch("/user_interactions/check_actor_in_list/" + actorId + "/", {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(function(response) {
+                console.log('Check status response:', response.status);
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(function(data) {
+                console.log('Check status data:', data);
+                // Check both is_in_list and in_list for flexibility
+                if (data.is_in_list || data.in_list) {
+                    console.log('Actor is in list, updating UI.');
+                    likeButton.classList.add('liked');
+                    likeButton.innerHTML = '<i class="fas fa-heart"></i> Đã thích';
+                } else {
+                    console.log('Actor is NOT in list.');
+                    likeButton.classList.remove('liked');
+                    likeButton.innerHTML = '<i class="fas fa-heart"></i> Yêu thích';
+                }
+            })
+            .catch(function(error) {
+                console.error('Error checking actor status:', error);
+            });
+        }
+        
+        // Add event listener to like button
+        likeButton.addEventListener('click', function(event) {
+            event.preventDefault();
+            console.log('Like button clicked. Current state:', likeButton.classList.contains('liked') ? 'liked' : 'not liked');
+            
+            try {
+                if (likeButton.classList.contains('liked')) {
+                    // Remove actor from list
+                    removeActorFromList();
+                } else {
+                    // Add actor to list
+                    addActorToList();
+                }
+            } catch (error) {
+                console.error('Error in like button handler:', error);
+                // Fallback to form submission
+                console.log('Using fallback form submission');
+                document.getElementById('fallback-like-form').submit();
+            }
+        });
+        
+        function addActorToList() {
+            const csrfToken = getCookie('csrftoken');
+            console.log('Adding actor to list. CSRF Token:', csrfToken ? 'Found' : 'Not found');
+            
+            // Using FormData instead of JSON
+            const formData = new FormData();
+            formData.append('csrfmiddlewaretoken', csrfToken);
+            
+            fetch("/user_interactions/add_actor_to_list/" + actorId + "/", {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: formData
+            })
+            .then(function(response) {
+                console.log('Response status:', response.status);
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(function(data) {
+                console.log('Response data:', data);
+                if (data.status === 'success') {
+                    likeButton.classList.add('liked');
+                    likeButton.innerHTML = '<i class="fas fa-heart"></i> Đã thích';
+                    
+                    // Show a notification
+                    var toast = document.createElement('div');
+                    toast.className = 'toast-notification';
+                    toast.innerHTML = '<i class="fas fa-check-circle"></i> ' + data.message;
+                    document.body.appendChild(toast);
+                    
+                    setTimeout(function() {
+                        toast.classList.add('show');
+                    }, 100);
+                    
+                    setTimeout(function() {
+                        toast.classList.remove('show');
+                        setTimeout(function() {
+                            document.body.removeChild(toast);
+                        }, 500);
+                    }, 3000);
+                }
+            })
+            .catch(function(error) {
+                console.error('Error adding actor:', error);
+            });
+        }
+        
+        function removeActorFromList() {
+            const csrfToken = getCookie('csrftoken');
+            console.log('Removing actor from list. CSRF Token:', csrfToken ? 'Found' : 'Not found');
+            
+            // Using FormData instead of JSON
+            const formData = new FormData();
+            formData.append('csrfmiddlewaretoken', csrfToken);
+            
+            fetch("/user_interactions/remove_actor_from_list/" + actorId + "/", {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: formData
+            })
+            .then(function(response) {
+                console.log('Response status (remove):', response.status);
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(function(data) {
+                console.log('Response data (remove):', data);
+                if (data.status === 'success') {
+                    likeButton.classList.remove('liked');
+                    likeButton.innerHTML = '<i class="fas fa-heart"></i> Yêu thích';
+                    
+                    // Show a notification
+                    var toast = document.createElement('div');
+                    toast.className = 'toast-notification toast-remove';
+                    toast.innerHTML = '<i class="fas fa-check-circle"></i> ' + data.message;
+                    document.body.appendChild(toast);
+                    
+                    setTimeout(function() {
+                        toast.classList.add('show');
+                    }, 100);
+                    
+                    setTimeout(function() {
+                        toast.classList.remove('show');
+                        setTimeout(function() {
+                            document.body.removeChild(toast);
+                        }, 500);
+                    }, 3000);
+                }
+            })
+            .catch(function(error) {
+                console.error('Error removing actor:', error);
+            });
+        }
+        
+        // Function to get CSRF token
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        
+        // Check initial status
+        checkActorInList();
+    });
+</script>
+{% endblock %} 

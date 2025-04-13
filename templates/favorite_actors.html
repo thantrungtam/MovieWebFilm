@@ -1,0 +1,305 @@
+{% extends 'base.html' %}
+{% block title %} Diễn viên yêu thích - {{ user.username }} - Mẹt Phim{% endblock %}
+{% block content %}
+<!-- Add spacer to prevent content from overlapping with navbar -->
+<div class="navbar-spacer"></div>
+
+<div class="user-list-hero">
+    <div class="user-list-hero-overlay">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-4">
+                    {% if user.profile.profile_photo %}
+                    <img src="{{ user.profile.profile_photo.url }}" alt="{{ user.username }}" class="img-fluid rounded-circle shadow-lg user-avatar">
+                    {% else %}
+                    <div class="default-avatar rounded-circle bg-primary text-white">
+                        {{ user.username|make_list|first|upper }}
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="col-md-8">
+                    <h1 class="user-list-title mb-3">Diễn viên yêu thích của {{ user.username }}</h1>
+                    <p class="lead">Những diễn viên mà {{ user.username }} đã thêm vào bộ sưu tập.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h2 class="card-title mb-4">Danh sách diễn viên yêu thích</h2>
+                    {% if user_list.actors.all %}
+                        <div class="row">
+                            {% for actor in user_list.actors.all %}
+                            <div class="col-md-3 mb-4">
+                                <div class="actor-item">
+                                    <a href="{% url 'actor_detail' actor.id %}" class="text-decoration-none">
+                                        {% if actor.image %}
+                                        <img src="{{ actor.image.url }}" alt="{{ actor.name }}" class="img-fluid rounded mb-2 actor-thumbnail">
+                                        {% else %}
+                                        <div class="no-image">
+                                            <i class="bi bi-person-fill"></i>
+                                        </div>
+                                        {% endif %}
+                                        <h5 class="actor-title">{{ actor.name }}</h5>
+                                        {% if actor.alternate_name %}
+                                        <div class="actor-alternate-name">{{ actor.alternate_name }}</div>
+                                        {% endif %}
+                                    </a>
+                                    <div class="d-flex justify-content-between align-items-center mt-2">
+                                        <div class="actor-gender">
+                                            <i class="bi {% if actor.gender == 'Female' %}bi-gender-female{% else %}bi-gender-male{% endif %}"></i>
+                                            {{ actor.gender }}
+                                        </div>
+                                        <a href="{% url 'remove_actor_from_list' actor.id %}" class="btn btn-danger btn-sm remove-btn">
+                                            <i class="bi bi-trash"></i> Xoá khỏi danh sách
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="no-actors">
+                            <p class="text-muted">Bạn chưa thêm diễn viên nào vào danh sách yêu thích.</p>
+                            <a href="{% url 'actor_list' %}" class="btn btn-primary mt-3">
+                                <i class="bi bi-search"></i> Khám phá diễn viên
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Spacer to prevent content from overlapping with fixed navbar */
+    .navbar-spacer {
+        height: 70px; /* Adjust height to match your navbar height */
+    }
+    
+    .user-list-hero {
+        background-image: url('/media/movie_thumbnails/list-wallpaper.jpg');
+        background-size: cover;
+        background-position: center;
+        position: relative;
+        min-height: 300px;
+        color: white;
+        margin-top: 0; /* Remove top margin */
+        z-index: 1;
+    }
+    
+    .user-list-hero-overlay {
+        background-color: rgba(0, 0, 0, 0.7); /* Simpler background */
+        padding: 50px 0;
+        position: relative;
+        z-index: 1;
+    }
+    
+    .user-avatar {
+        width: 200px;
+        height: 200px;
+        object-fit: cover;
+        border: 3px solid white;
+    }
+    
+    .default-avatar {
+        width: 200px;
+        height: 200px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 5rem;
+        border: 3px solid white;
+    }
+    
+    .user-list-title {
+        font-size: 2.5rem;
+        font-weight: bold;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+    }
+    
+    .actor-item {
+        background-color: #262626;
+        border-radius: 8px;
+        overflow: hidden;
+        transition: transform 0.3s ease-in-out;
+        height: 100%;
+        padding: 12px;
+    }
+    
+    .actor-item:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+    }
+    
+    .actor-thumbnail {
+        height: 250px;
+        width: 100%;
+        object-fit: cover;
+        border-radius: 4px;
+        transition: all 0.3s ease;
+    }
+    
+    .no-image {
+        height: 250px;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #404040;
+        color: #e0e0e0;
+        font-size: 3rem;
+        border-radius: 4px;
+    }
+    
+    .actor-title {
+        color: #efefef;
+        font-size: 1.1rem;
+        margin: 8px 0 4px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    .actor-alternate-name {
+        color: #b0b0b0;
+        font-size: 0.9rem;
+        margin-bottom: 8px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    .actor-gender {
+        color: #b0b0b0;
+        font-size: 0.9rem;
+    }
+    
+    .card-title {
+        color: #efefef;
+        border-bottom: 2px solid #007bff;
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+    }
+    
+    .remove-btn {
+        transition: all 0.2s ease;
+    }
+    
+    .remove-btn:hover {
+        background-color: #dc3545;
+        transform: scale(1.05);
+    }
+    
+    .no-actors {
+        text-align: center;
+        padding: 40px 20px;
+        background-color: #222;
+        border-radius: 8px;
+    }
+    
+    /* Animation for actor listing */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .actor-item {
+        animation: fadeInUp 0.5s ease-out forwards;
+    }
+    
+    .col-md-3:nth-child(1) .actor-item { animation-delay: 0.1s; }
+    .col-md-3:nth-child(2) .actor-item { animation-delay: 0.2s; }
+    .col-md-3:nth-child(3) .actor-item { animation-delay: 0.3s; }
+    .col-md-3:nth-child(4) .actor-item { animation-delay: 0.4s; }
+    .col-md-3:nth-child(5) .actor-item { animation-delay: 0.5s; }
+    .col-md-3:nth-child(6) .actor-item { animation-delay: 0.6s; }
+    .col-md-3:nth-child(7) .actor-item { animation-delay: 0.7s; }
+    .col-md-3:nth-child(8) .actor-item { animation-delay: 0.8s; }
+</style>
+
+<script>
+    // AJAX for remove buttons
+    document.addEventListener('DOMContentLoaded', function() {
+        const removeButtons = document.querySelectorAll('.remove-btn');
+        
+        removeButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                const url = this.getAttribute('href');
+                const actorItem = this.closest('.actor-item');
+                const actorCol = this.closest('.col-md-3');
+                
+                fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken'),
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        // Animate removal
+                        actorItem.style.opacity = '0';
+                        actorItem.style.transform = 'scale(0.8) translateY(-20px)';
+                        
+                        setTimeout(() => {
+                            actorCol.remove();
+                            
+                            // Check if there are no more actors
+                            if (document.querySelectorAll('.actor-item').length === 0) {
+                                const cardBody = document.querySelector('.card-body');
+                                const noActorsDiv = document.createElement('div');
+                                noActorsDiv.className = 'no-actors';
+                                noActorsDiv.innerHTML = `
+                                    <p class="text-muted">Bạn chưa thêm diễn viên nào vào danh sách yêu thích.</p>
+                                    <a href="{% url 'actor_list' %}" class="btn btn-primary mt-3">
+                                        <i class="bi bi-search"></i> Khám phá diễn viên
+                                    </a>
+                                `;
+                                
+                                // Replace content
+                                cardBody.querySelector('.row').remove();
+                                cardBody.appendChild(noActorsDiv);
+                            }
+                        }, 300);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            });
+        });
+    });
+    
+    // Function to get CSRF token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+</script>
+{% endblock %} 

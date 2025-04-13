@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from movies.models import Movie
+from actor.models import Actor
 from django.core.validators import MinValueValidator,MaxValueValidator
 
 class Rating(models.Model):
@@ -28,7 +29,8 @@ class Comment(models.Model):
 
 class UserList(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    movies = models.ManyToManyField(Movie, related_name="user_lists")
+    movies = models.ManyToManyField(Movie, related_name="user_lists", blank=True)
+    actors = models.ManyToManyField(Actor, related_name="user_lists", blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

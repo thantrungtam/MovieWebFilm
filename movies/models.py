@@ -1,6 +1,7 @@
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils import timezone
+from actor.models import Actor
 
 class Genre(models.Model):
     name = models.CharField(max_length=50, unique=True)
@@ -13,6 +14,7 @@ class Movie(models.Model):
     description = models.TextField()
     release_date = models.DateField()
     genres = models.ManyToManyField(Genre)
+    actors = models.ManyToManyField(Actor, related_name='movies', blank=True)
     video_link = models.URLField(null=True, blank=True)
     streaming_link = models.URLField(null=True, blank=True)
     video_file = models.FileField(upload_to='videos/', null=True, blank=True) # them
