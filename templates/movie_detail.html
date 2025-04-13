@@ -159,15 +159,19 @@
                     </h3>
                 </div>
                 <div class="card-body">
-                    <form method="post" action="{% url 'rate_movie' movie.id %}" class="rating-form">
+                    <form method="post" action="{% url 'rate_movie' movie.id %}" class="rating-form" id="ratingForm">
                         {% csrf_token %}
+                        <input type="hidden" name="next" value="{{ request.path }}">
                         <div class="star-rating">
                             {% for i in "54321" %}
-                            <input type="radio" id="star{{ i }}" name="rating" value="{{ i }}">
+                            <input type="radio" id="star{{ i }}" name="rating" value="{{ i }}" required>
                             <label for="star{{ i }}"><i class="bi bi-star-fill"></i></label>
                             {% endfor %}
                         </div>
-                        <button type="submit" class="submit-btn">
+                        <div class="rating-error-message text-danger mb-2" style="display: none;">
+                            <i class="bi bi-exclamation-circle"></i> Vui lòng chọn số sao đánh giá
+                        </div>
+                        <button type="submit" class="submit-btn" id="submitRating">
                             <i class="bi bi-check2-circle"></i>
                             Xác nhận đánh giá
                         </button>
@@ -217,27 +221,24 @@
                         <p>Chưa có bình luận nào. Hãy là người đầu tiên bình luận!</p>
                     </div>
                     {% endif %}
-                </div>
-            </div>
 
-            <!-- Add Comment Card -->
-            <div class="content-card add-comment-card">
-                <div class="card-header">
-                    <h3 class="card-title">
-                        <i class="bi bi-pencil-square"></i>
-                        Thêm bình luận
-                    </h3>
-                </div>
-                <div class="card-body">
-                    <form method="post" action="{% url 'comment_movie' movie.id %}" class="comment-form">
-                        {% csrf_token %}
-                        <textarea name="content" class="comment-textarea" rows="3"
-                            placeholder="Viết bình luận của bạn..."></textarea>
-                        <button type="submit" class="submit-btn">
-                            <i class="bi bi-send"></i>
-                            Gửi bình luận
-                        </button>
-                    </form>
+                    <!-- Form thêm bình luận -->
+                    <div class="add-comment-section">
+                        <h4><i class="bi bi-pencil-square"></i> Thêm bình luận mới</h4>
+                        <form method="post" action="{% url 'comment_movie' movie.id %}" class="comment-form"
+                            id="commentForm">
+                            {% csrf_token %}
+                            <textarea name="content" class="comment-textarea" rows="3"
+                                placeholder="Viết bình luận của bạn..." required></textarea>
+                            <div class="comment-error-message text-danger mb-2" style="display: none;">
+                                <i class="bi bi-exclamation-circle"></i> Vui lòng nhập nội dung bình luận
+                            </div>
+                            <button type="submit" class="submit-btn" id="submitComment">
+                                <i class="bi bi-send"></i>
+                                Gửi bình luận
+                            </button>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
@@ -992,5 +993,95 @@
             height: 120px;
         }
     }
+
+    /* Error message styles */
+    .rating-error-message,
+    .comment-error-message {
+        font-size: 0.9rem;
+        margin-top: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem;
+        background: rgba(220, 53, 69, 0.1);
+        border-radius: var(--border-radius);
+        border-left: 3px solid #dc3545;
+    }
+
+    .rating-error-message i,
+    .comment-error-message i {
+        font-size: 1rem;
+        color: #dc3545;
+    }
+
+    /* Form validation styles */
+    .rating-form .star-rating input:invalid~.rating-error-message,
+    .comment-form textarea:invalid~.comment-error-message {
+        display: flex;
+        animation: shake 0.5s;
+    }
+
+    .rating-form .star-rating input:valid~.rating-error-message,
+    .comment-form textarea:valid~.comment-error-message {
+        display: none;
+    }
+
+    @keyframes shake {
+
+        0%,
+        100% {
+            transform: translateX(0);
+        }
+
+        25% {
+            transform: translateX(-5px);
+        }
+
+        75% {
+            transform: translateX(5px);
+        }
+    }
 </style>
+
+<script>
+    // Rating form validation
+    document.getElementById('ratingForm').addEventListener('submit', function (e) {
+        var rating = document.querySelector('input[name="rating"]:checked');
+        var errorMessage = document.querySelector('.rating-error-message');
+
+        if (!rating) {
+            e.preventDefault();
+            errorMessage.style.display = 'flex';
+            errorMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    });
+
+    // Comment form validation
+    document.getElementById('commentForm').addEventListener('submit', function (e) {
+        var commentText = document.querySelector('.comment-textarea').value.trim();
+        var errorMessage = document.querySelector('.comment-error-message');
+
+        if (!commentText) {
+            e.preventDefault();
+            errorMessage.style.display = 'flex';
+            errorMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    });
+
+    // Real-time validation for comment textarea
+    document.querySelector('.comment-textarea').addEventListener('input', function () {
+        var errorMessage = document.querySelector('.comment-error-message');
+        if (this.value.trim()) {
+            errorMessage.style.display = 'none';
+        }
+    });
+
+    // Real-time validation for rating
+    document.querySelectorAll('.star-rating input').forEach(function (input) {
+        input.addEventListener('change', function () {
+            var errorMessage = document.querySelector('.rating-error-message');
+            errorMessage.style.display = 'none';
+        });
+    });
+</script>
 {% endblock %}

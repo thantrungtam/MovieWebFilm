@@ -5,7 +5,7 @@
 <div class="movie-navigation py-3" style="margin-top: 80px;">
     <div class="container">
         <div class="navigation-content d-flex align-items-center justify-content-between flex-wrap">
-            <a href="{% url 'movie_detail' movie.id %}" class="btn btn-outline-secondary" >
+            <a href="{% url 'movie_detail' movie.id %}" class="btn btn-outline-secondary">
                 <i class="bi bi-arrow-left"></i> Quay lại thông tin phim
             </a>
             <h1 class="movie-header-title h4 m-0">{{ movie.title }}</h1>
@@ -16,18 +16,39 @@
 
 
 <!-- Phần xem phim chính -->
-<div class="container movie-content-container">
-    Trình phát video
+<div class="container movie-content-container" style="margin-top: 20px;">
+    <!-- Thanh điều hướng phim -->
+    <div class="movie-player-navigation mb-3">
+        <div class="d-flex align-items-center">
+            <a href="{% url 'movie_detail' movie.id %}" class="back-to-movie-btn">
+                <i class="bi bi-arrow-left"></i>
+            </a>
+            <h2 class="movie-player-title">{{ movie.title }}</h2>
+        </div>
+    </div>
+
     <div class="video-player-wrapper">
         {% if movie.video_file %}
-        <video class="main-video-player" controls autoplay>
+        <video id="my-video" class="video-js vjs-default-skin vjs-big-play-centered" controls preload="auto"
+            width="100%" height="100%" data-setup='{"fluid": true}'>
             <source src="{{ movie.video_file.url }}" type="video/mp4">
-            Trình duyệt không hỗ trợ video.
+            <p class="vjs-no-js">
+                Trình duyệt không hỗ trợ video. Vui lòng cập nhật trình duyệt của bạn.
+            </p>
         </video>
+        <div class="video-controls">
+            <a href="{{ movie.video_file.url }}" download class="download-btn" title="Tải xuống">
+                <i class="bi bi-download"></i>
+            </a>
+        </div>
         {% elif movie.streaming_link %}
-        <iframe src="https://player.phimapi.com/player/?url={{ movie.streaming_link }}" class="main-video-player"
-            frameborder="0" allowfullscreen>
-        </iframe>
+        <video id="my-video" class="video-js vjs-default-skin vjs-big-play-centered" controls preload="auto"
+            width="100%" height="100%" data-setup='{"fluid": true}'>
+            <source src="{{ movie.streaming_link }}" type="application/x-mpegURL">
+            <p class="vjs-no-js">
+                Trình duyệt không hỗ trợ video. Vui lòng cập nhật trình duyệt của bạn.
+            </p>
+        </video>
         {% else %}
         <div class="no-video-message">
             <i class="bi bi-exclamation-triangle-fill"></i>
@@ -90,16 +111,20 @@
                         </h3>
                     </div>
                     <div class="card-body">
-                        <form method="post" action="{% url 'rate_movie' movie.id %}" class="rating-form">
+                        <form method="post" action="{% url 'rate_movie' movie.id %}" class="rating-form"
+                            id="ratingForm">
                             {% csrf_token %}
                             <input type="hidden" name="next" value="{{ request.path }}">
                             <div class="star-rating">
                                 {% for i in "54321" %}
-                                <input type="radio" id="star{{ i }}" name="rating" value="{{ i }}">
+                                <input type="radio" id="star{{ i }}" name="rating" value="{{ i }}" required>
                                 <label for="star{{ i }}"><i class="bi bi-star-fill"></i></label>
                                 {% endfor %}
                             </div>
-                            <button type="submit" class="submit-btn">
+                            <div class="rating-error-message text-danger mb-2" style="display: none;">
+                                <i class="bi bi-exclamation-circle"></i> Vui lòng chọn số sao đánh giá
+                            </div>
+                            <button type="submit" class="submit-btn" id="submitRating">
                                 <i class="bi bi-check2-circle"></i>
                                 Xác nhận đánh giá
                             </button>
@@ -153,12 +178,16 @@
                         <!-- Form thêm bình luận -->
                         <div class="add-comment-section">
                             <h4><i class="bi bi-pencil-square"></i> Thêm bình luận mới</h4>
-                            <form method="post" action="{% url 'comment_movie' movie.id %}" class="comment-form">
+                            <form method="post" action="{% url 'comment_movie' movie.id %}" class="comment-form"
+                                id="commentForm">
                                 {% csrf_token %}
                                 <input type="hidden" name="next" value="{{ request.path }}">
                                 <textarea name="content" class="comment-textarea" rows="3"
-                                    placeholder="Viết bình luận của bạn..."></textarea>
-                                <button type="submit" class="submit-btn">
+                                    placeholder="Viết bình luận của bạn..." required></textarea>
+                                <div class="comment-error-message text-danger mb-2" style="display: none;">
+                                    <i class="bi bi-exclamation-circle"></i> Vui lòng nhập nội dung bình luận
+                                </div>
+                                <button type="submit" class="submit-btn" id="submitComment">
                                     <i class="bi bi-send"></i>
                                     Gửi bình luận
                                 </button>
@@ -351,11 +380,167 @@
         margin-bottom: 2rem;
     }
 
-    .main-video-player {
+    .video-js {
         width: 100%;
-        display: block;
-        aspect-ratio: 16/9;
+        height: 0;
+        padding-bottom: 56.25%;
+        /* 16:9 aspect ratio */
+        position: relative;
+    }
+
+    .video-js .vjs-tech {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
+
+    .video-controls {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        z-index: 100;
+    }
+
+    .download-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        background: rgba(0, 0, 0, 0.6);
+        border-radius: 50%;
+        color: white;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+
+    .download-btn:hover {
+        background: var(--primary-color);
+        transform: scale(1.1);
+    }
+
+    .download-btn i {
+        font-size: 1.2rem;
+    }
+
+    /* Custom Video.js Theme */
+    .video-js .vjs-big-play-button {
+        background-color: var(--primary-color);
         border: none;
+        border-radius: 50%;
+        width: 80px;
+        height: 80px;
+        line-height: 80px;
+        margin-left: -40px;
+        margin-top: -40px;
+    }
+
+    .video-js .vjs-control-bar {
+        display: flex;
+        align-items: center;
+        padding: 0 10px;
+        background: rgba(0, 0, 0, 0.7);
+        z-index: 2;
+    }
+
+    .video-js .vjs-progress-control {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        margin: 0 10px;
+    }
+
+    .video-js .vjs-progress-holder {
+        flex: 1;
+        margin: 0 10px;
+    }
+
+    .video-js .vjs-time-control {
+        display: block;
+        min-width: 100px;
+        text-align: center;
+        font-size: 12px;
+        color: #fff;
+    }
+
+    .video-js .vjs-current-time {
+        margin-right: 5px;
+    }
+
+    .video-js .vjs-duration {
+        margin-left: 5px;
+    }
+
+    .video-js .vjs-time-divider {
+        display: inline-block;
+        margin: 0 5px;
+        color: #fff;
+    }
+
+    /* Play/Pause Overlay */
+    .video-js .vjs-overlay-play {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 1;
+    }
+
+    .video-js .vjs-overlay-play .vjs-overlay-play-icon {
+        width: 80px;
+        height: 80px;
+        background: rgba(0, 0, 0, 0.7);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .video-js .vjs-overlay-play:hover .vjs-overlay-play-icon {
+        opacity: 1;
+    }
+
+    .video-js .vjs-overlay-play .vjs-overlay-play-icon i {
+        font-size: 2.5rem;
+        color: var(--primary-color);
+    }
+
+    /* Customize control icons */
+    .video-js .vjs-play-control .vjs-icon-placeholder:before {
+        color: var(--primary-color);
+    }
+
+    .video-js .vjs-volume-panel .vjs-icon-placeholder:before {
+        color: var(--primary-color);
+    }
+
+    .video-js .vjs-fullscreen-control .vjs-icon-placeholder:before {
+        color: var(--primary-color);
+    }
+
+    .video-js .vjs-progress-holder .vjs-play-progress {
+        background-color: var(--primary-color);
+    }
+
+    .video-js .vjs-progress-holder .vjs-load-progress {
+        background-color: rgba(255, 255, 255, 0.3);
+    }
+
+    .video-js .vjs-progress-holder .vjs-slider {
+        background-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .video-js .vjs-progress-holder .vjs-slider:hover {
+        background-color: rgba(255, 255, 255, 0.3);
     }
 
     .no-video-message {
@@ -946,5 +1131,220 @@
             width: 100%;
         }
     }
+
+    /* Movie Player Navigation */
+    .movie-player-navigation {
+        padding: 10px 0;
+    }
+
+    .back-to-movie-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        background: rgba(0, 0, 0, 0.6);
+        border-radius: 50%;
+        color: white;
+        text-decoration: none;
+        margin-right: 15px;
+        transition: all 0.3s ease;
+    }
+
+    .back-to-movie-btn:hover {
+        background: var(--primary-color);
+        transform: scale(1.1);
+        color: white;
+    }
+
+    .back-to-movie-btn i {
+        font-size: 1.2rem;
+    }
+
+    .movie-player-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin: 0;
+        color: var(--text-light);
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Error message styles */
+    .rating-error-message,
+    .comment-error-message {
+        font-size: 0.9rem;
+        margin-top: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .rating-error-message i,
+    .comment-error-message i {
+        font-size: 1rem;
+    }
+
+    /* Form validation styles */
+    .rating-form .star-rating input:invalid~.rating-error-message,
+    .comment-form textarea:invalid~.comment-error-message {
+        display: flex;
+    }
+
+    .rating-form .star-rating input:valid~.rating-error-message,
+    .comment-form textarea:valid~.comment-error-message {
+        display: none;
+    }
 </style>
+
+<!-- Add Video.js CSS and JS -->
+<link href="https://vjs.zencdn.net/7.20.3/video-js.css" rel="stylesheet" />
+<script src="https://vjs.zencdn.net/7.20.3/video.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/videojs-contrib-hls@5.15.0/dist/videojs-contrib-hls.min.js"></script>
+<script>
+    var player = videojs('my-video');
+
+    // Add keyboard shortcuts
+    document.addEventListener('keydown', function (e) {
+        if (e.target.tagName.toLowerCase() !== 'input' && e.target.tagName.toLowerCase() !== 'textarea') {
+            switch (e.key) {
+                case ' ':
+                    if (player.paused()) {
+                        player.play();
+                    } else {
+                        player.pause();
+                    }
+                    break;
+                case 'ArrowLeft':
+                    player.currentTime(player.currentTime() - 10);
+                    break;
+                case 'ArrowRight':
+                    player.currentTime(player.currentTime() + 10);
+                    break;
+                case 'f':
+                case 'F':
+                    if (player.isFullscreen()) {
+                        player.exitFullscreen();
+                    } else {
+                        player.requestFullscreen();
+                    }
+                    break;
+            }
+        }
+    });
+
+    player.ready(function () {
+        // Get the progress control element
+        var progressControl = this.controlBar.getChild('ProgressControl');
+
+        // Create time display container
+        var timeDisplay = document.createElement('div');
+        timeDisplay.className = 'vjs-time-control vjs-time-control-group';
+        timeDisplay.style.display = 'flex';
+        timeDisplay.style.alignItems = 'center';
+        timeDisplay.style.margin = '0 10px';
+
+        // Create current time display
+        var currentTimeDisplay = document.createElement('span');
+        currentTimeDisplay.className = 'vjs-current-time-display';
+        currentTimeDisplay.textContent = '0:00';
+
+        // Create time divider
+        var timeDivider = document.createElement('span');
+        timeDivider.className = 'vjs-time-divider';
+        timeDivider.textContent = '/';
+
+        // Create duration display
+        var durationDisplay = document.createElement('span');
+        durationDisplay.className = 'vjs-duration-display';
+        durationDisplay.textContent = '0:00';
+
+        // Append all elements
+        timeDisplay.appendChild(currentTimeDisplay);
+        timeDisplay.appendChild(timeDivider);
+        timeDisplay.appendChild(durationDisplay);
+
+        // Insert time display after the progress bar
+        progressControl.el().appendChild(timeDisplay);
+
+        // Create overlay play button
+        var overlayPlay = document.createElement('div');
+        overlayPlay.className = 'vjs-overlay-play';
+        overlayPlay.innerHTML = '<div class="vjs-overlay-play-icon"><i class="bi bi-play-fill"></i></div>';
+        this.el().appendChild(overlayPlay);
+
+        // Add click handler for overlay play
+        overlayPlay.addEventListener('click', function () {
+            if (player.paused()) {
+                player.play();
+            } else {
+                player.pause();
+            }
+        });
+
+        // Update play/pause icon
+        this.on('play', function () {
+            overlayPlay.querySelector('i').className = 'bi bi-pause-fill';
+        });
+
+        this.on('pause', function () {
+            overlayPlay.querySelector('i').className = 'bi bi-play-fill';
+        });
+
+        // Update time display
+        this.on('timeupdate', function () {
+            var currentTime = this.currentTime();
+            var duration = this.duration();
+
+            currentTimeDisplay.textContent = formatTime(currentTime);
+            durationDisplay.textContent = formatTime(duration);
+        });
+    });
+
+    // Format time as MM:SS
+    function formatTime(seconds) {
+        var minutes = Math.floor(seconds / 60);
+        var remainingSeconds = Math.floor(seconds % 60);
+        return minutes + ':' + (remainingSeconds < 10 ? '0' : '') + remainingSeconds;
+    }
+
+    // Rating form validation
+    document.getElementById('ratingForm').addEventListener('submit', function (e) {
+        var rating = document.querySelector('input[name="rating"]:checked');
+        var errorMessage = document.querySelector('.rating-error-message');
+
+        if (!rating) {
+            e.preventDefault();
+            errorMessage.style.display = 'flex';
+            errorMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    });
+
+    // Comment form validation
+    document.getElementById('commentForm').addEventListener('submit', function (e) {
+        var commentText = document.querySelector('.comment-textarea').value.trim();
+        var errorMessage = document.querySelector('.comment-error-message');
+
+        if (!commentText) {
+            e.preventDefault();
+            errorMessage.style.display = 'flex';
+            errorMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    });
+
+    // Real-time validation for comment textarea
+    document.querySelector('.comment-textarea').addEventListener('input', function () {
+        var errorMessage = document.querySelector('.comment-error-message');
+        if (this.value.trim()) {
+            errorMessage.style.display = 'none';
+        }
+    });
+
+    // Real-time validation for rating
+    document.querySelectorAll('.star-rating input').forEach(function (input) {
+        input.addEventListener('change', function () {
+            var errorMessage = document.querySelector('.rating-error-message');
+            errorMessage.style.display = 'none';
+        });
+    });
+</script>
 {% endblock %}
