@@ -37,14 +37,44 @@
                     {% endif %}
                 </div>
                 <div class="actor-actions mt-3">
-                    <button class="btn btn-primary" id="like-button"><i class="fas fa-heart"></i> Yêu thích</button>
-                    <button class="btn btn-secondary"><i class="fas fa-share-alt"></i> Chia sẻ</button>
+                    <button class="btn btn-secondary" id="share-button"><i class="fas fa-share-alt"></i> Chia sẻ</button>
                     
-                    <!-- Hidden form for fallback -->
-                    <form id="fallback-like-form" method="post" action="/user_interactions/add_actor_to_list/{{ actor.id }}/" style="display: none;">
-                        {% csrf_token %}
-                        <input type="submit" value="Add to Favorites">
-                    </form>
+                    <!-- Share modal -->
+                    <div class="modal fade" id="shareModal" tabindex="-1" aria-labelledby="shareModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="shareModalLabel">Chia sẻ trang diễn viên</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="share-options">
+                                        <button class="btn btn-facebook share-btn" data-platform="facebook">
+                                            <i class="fab fa-facebook-f"></i> Facebook
+                                        </button>
+                                        <button class="btn btn-twitter share-btn" data-platform="twitter">
+                                            <i class="fab fa-twitter"></i> Twitter
+                                        </button>
+                                        <button class="btn btn-whatsapp share-btn" data-platform="whatsapp">
+                                            <i class="fab fa-whatsapp"></i> WhatsApp
+                                        </button>
+                                        <button class="btn btn-telegram share-btn" data-platform="telegram">
+                                            <i class="fab fa-telegram-plane"></i> Telegram
+                                        </button>
+                                    </div>
+                                    <div class="copy-link mt-4">
+                                        <label for="share-url" class="form-label">Hoặc sao chép đường dẫn:</label>
+                                        <div class="input-group">
+                                            <input type="text" class="form-control" id="share-url" readonly>
+                                            <button class="btn btn-outline-primary" type="button" id="copy-button">
+                                                <i class="fas fa-copy"></i> Sao chép
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -200,9 +230,19 @@
     
     .actor-actions .btn {
         margin-right: 10px;
-        padding: 8px 20px;
+        padding: 10px 24px;
         border-radius: 30px;
         transition: all 0.3s ease;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+    
+    .actor-actions .btn i {
+        font-size: 1.1rem;
     }
     
     .actor-actions .btn-primary {
@@ -212,10 +252,30 @@
     
     .actor-actions .btn-primary:hover {
         background-color: #ff1a4b;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+    }
+    
+    .actor-actions .btn-primary.liked {
+        background-color: #ff1a4b;
+        animation: pulse 0.3s;
+    }
+    
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
     }
     
     .actor-actions .btn-secondary {
-        background-color: #6c757d;
+        background-color: #32383e;
+        border-color: #32383e;
+    }
+    
+    .actor-actions .btn-secondary:hover {
+        background-color: #4a545e;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
     }
     
     /* Profile Card */
@@ -257,24 +317,32 @@
         text-decoration: none;
         color: inherit;
         display: block;
-    }
-    
-    .movie-card {
-        background-color: #2a2a2a;
-        border-radius: var(--border-radius);
-        overflow: hidden;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-        transition: transform var(--transition-speed), box-shadow var(--transition-speed);
         height: 100%;
     }
     
+    .movie-card {
+        position: relative;
+        width: 100%;
+        height: 0;
+        padding-top: 150%; /* 2:3 aspect ratio */
+        overflow: hidden;
+        border-radius: var(--border-radius);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        transition: transform var(--transition-speed), box-shadow var(--transition-speed);
+        margin-bottom: 15px;
+    }
+    
     .movie-card:hover {
-        transform: translateY(-5px);
+        transform: translateY(-5px) scale(1.03);
         box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
     }
     
     .movie-poster {
-        height: 250px;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
         overflow: hidden;
     }
     
@@ -290,6 +358,11 @@
     }
     
     .movie-info {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: linear-gradient(to top, rgba(0, 0, 0, 0.9), transparent);
         padding: 15px;
         color: white;
     }
@@ -322,13 +395,17 @@
         right: 20px;
         background-color: rgba(46, 125, 50, 0.9);
         color: white;
-        padding: 12px 20px;
-        border-radius: 4px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        padding: 15px 25px;
+        border-radius: 8px;
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
         z-index: 9999;
         transform: translateY(100px);
         opacity: 0;
-        transition: all 0.3s ease-in-out;
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        backdrop-filter: blur(10px);
     }
 
     .toast-notification.toast-remove {
@@ -341,101 +418,177 @@
     }
 
     .toast-notification i {
-        margin-right: 8px;
+        margin-right: 12px;
+        font-size: 1.2rem;
+    }
+
+    /* Share Modal Styling */
+    .modal-content {
+        background-color: #2a2a2a;
+        color: white;
+        border: none;
+        border-radius: 12px;
+    }
+    
+    .modal-header {
+        border-bottom: 1px solid #3a3a3a;
+    }
+    
+    .modal-header .btn-close {
+        color: white;
+        filter: invert(1) grayscale(100%) brightness(200%);
+    }
+    
+    .share-options {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+        margin-top: 15px;
+    }
+    
+    .share-btn {
+        padding: 12px;
+        border-radius: 8px;
+        font-weight: 500;
+        transition: all 0.2s ease;
+    }
+    
+    .share-btn:hover {
+        transform: translateY(-2px);
+    }
+    
+    .btn-facebook {
+        background-color: #3b5998;
+        color: white;
+    }
+    
+    .btn-twitter {
+        background-color: #1da1f2;
+        color: white;
+    }
+    
+    .btn-whatsapp {
+        background-color: #25d366;
+        color: white;
+    }
+    
+    .btn-telegram {
+        background-color: #0088cc;
+        color: white;
+    }
+    
+    #share-url {
+        background-color: #1e1e1e;
+        color: white;
+        border: 1px solid #3a3a3a;
+    }
+    
+    #copy-button {
+        background-color: #32383e;
+        color: white;
+        border: 1px solid #3a3a3a;
+    }
+    
+    #copy-button:hover {
+        background-color: #4a545e;
     }
 </style>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const likeButton = document.getElementById('like-button');
-        const actorId = "{{ actor.id }}";
+        const shareButton = document.getElementById('share-button');
+        let shareModal;
         
-        // Check if actor is already in user's list
-        function checkActorInList() {
-            console.log('Checking if actor is in list. Actor ID:', actorId);
-            fetch("/user_interactions/check_actor_in_list/" + actorId + "/", {
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            })
-            .then(function(response) {
-                console.log('Check status response:', response.status);
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(function(data) {
-                console.log('Check status data:', data);
-                // Check both is_in_list and in_list for flexibility
-                if (data.is_in_list || data.in_list) {
-                    console.log('Actor is in list, updating UI.');
-                    likeButton.classList.add('liked');
-                    likeButton.innerHTML = '<i class="fas fa-heart"></i> Đã thích';
+        // Initialize Bootstrap modal if it exists
+        if (document.getElementById('shareModal')) {
+            try {
+                shareModal = new bootstrap.Modal(document.getElementById('shareModal'));
+            } catch (error) {
+                console.error('Error initializing modal:', error);
+                // Fallback for modal initialization
+                if (typeof bootstrap !== 'undefined') {
+                    shareModal = new bootstrap.Modal(document.getElementById('shareModal'));
                 } else {
-                    console.log('Actor is NOT in list.');
-                    likeButton.classList.remove('liked');
-                    likeButton.innerHTML = '<i class="fas fa-heart"></i> Yêu thích';
+                    console.warn('Bootstrap not available');
                 }
-            })
-            .catch(function(error) {
-                console.error('Error checking actor status:', error);
+            }
+        }
+        
+        const copyButton = document.getElementById('copy-button');
+        const shareUrlInput = document.getElementById('share-url');
+        const actorName = "{{ actor.name }}";
+        
+        // Set the share URL to the current page
+        if (shareUrlInput) {
+            shareUrlInput.value = window.location.href;
+        }
+        
+        // Share button functionality
+        if (shareButton && shareModal) {
+            shareButton.addEventListener('click', function() {
+                shareModal.show();
             });
         }
         
-        // Add event listener to like button
-        likeButton.addEventListener('click', function(event) {
-            event.preventDefault();
-            console.log('Like button clicked. Current state:', likeButton.classList.contains('liked') ? 'liked' : 'not liked');
-            
-            try {
-                if (likeButton.classList.contains('liked')) {
-                    // Remove actor from list
-                    removeActorFromList();
-                } else {
-                    // Add actor to list
-                    addActorToList();
+        // Copy link button functionality
+        if (copyButton && shareUrlInput) {
+            copyButton.addEventListener('click', function() {
+                shareUrlInput.select();
+                document.execCommand('copy');
+                
+                // Change button text temporarily
+                const originalText = copyButton.innerHTML;
+                copyButton.innerHTML = '<i class="fas fa-check"></i> Đã sao chép';
+                    
+                    setTimeout(function() {
+                    copyButton.innerHTML = originalText;
+                }, 2000);
+            });
+        }
+        
+        // Social media share buttons
+        document.querySelectorAll('.share-btn').forEach(function(button) {
+            button.addEventListener('click', function() {
+                const platform = this.getAttribute('data-platform');
+                const url = encodeURIComponent(window.location.href);
+                const text = encodeURIComponent(`Thông tin về diễn viên ${actorName} - Mẹt Phim`);
+                let shareUrl;
+                
+                switch(platform) {
+                    case 'facebook':
+                        shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${url}`;
+                        break;
+                    case 'twitter':
+                        shareUrl = `https://twitter.com/intent/tweet?url=${url}&text=${text}`;
+                        break;
+                    case 'whatsapp':
+                        shareUrl = `https://api.whatsapp.com/send?text=${text} ${url}`;
+                        break;
+                    case 'telegram':
+                        shareUrl = `https://t.me/share/url?url=${url}&text=${text}`;
+                        break;
                 }
-            } catch (error) {
-                console.error('Error in like button handler:', error);
-                // Fallback to form submission
-                console.log('Using fallback form submission');
-                document.getElementById('fallback-like-form').submit();
-            }
+                
+                // Open share window
+                window.open(shareUrl, '_blank', 'width=600,height=400');
+                
+                // Show success notification
+                showNotification(`Đã chia sẻ qua ${platform}`, 'success');
+                
+                // Close modal after sharing
+                if (shareModal) {
+                    setTimeout(() => {
+                        shareModal.hide();
+                    }, 500);
+                }
+            });
         });
         
-        function addActorToList() {
-            const csrfToken = getCookie('csrftoken');
-            console.log('Adding actor to list. CSRF Token:', csrfToken ? 'Found' : 'Not found');
-            
-            // Using FormData instead of JSON
-            const formData = new FormData();
-            formData.append('csrfmiddlewaretoken', csrfToken);
-            
-            fetch("/user_interactions/add_actor_to_list/" + actorId + "/", {
-                method: 'POST',
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                body: formData
-            })
-            .then(function(response) {
-                console.log('Response status:', response.status);
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(function(data) {
-                console.log('Response data:', data);
-                if (data.status === 'success') {
-                    likeButton.classList.add('liked');
-                    likeButton.innerHTML = '<i class="fas fa-heart"></i> Đã thích';
-                    
-                    // Show a notification
+        // Utility function to show notifications
+        function showNotification(message, type) {
                     var toast = document.createElement('div');
-                    toast.className = 'toast-notification';
-                    toast.innerHTML = '<i class="fas fa-check-circle"></i> ' + data.message;
+            toast.className = 'toast-notification' + (type === 'error' ? ' toast-remove' : '');
+            toast.innerHTML = '<i class="fas fa-' + (type === 'error' ? 'times' : 'check') + '-circle"></i> ' + message;
                     document.body.appendChild(toast);
                     
                     setTimeout(function() {
@@ -448,62 +601,6 @@
                             document.body.removeChild(toast);
                         }, 500);
                     }, 3000);
-                }
-            })
-            .catch(function(error) {
-                console.error('Error adding actor:', error);
-            });
-        }
-        
-        function removeActorFromList() {
-            const csrfToken = getCookie('csrftoken');
-            console.log('Removing actor from list. CSRF Token:', csrfToken ? 'Found' : 'Not found');
-            
-            // Using FormData instead of JSON
-            const formData = new FormData();
-            formData.append('csrfmiddlewaretoken', csrfToken);
-            
-            fetch("/user_interactions/remove_actor_from_list/" + actorId + "/", {
-                method: 'POST',
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                body: formData
-            })
-            .then(function(response) {
-                console.log('Response status (remove):', response.status);
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(function(data) {
-                console.log('Response data (remove):', data);
-                if (data.status === 'success') {
-                    likeButton.classList.remove('liked');
-                    likeButton.innerHTML = '<i class="fas fa-heart"></i> Yêu thích';
-                    
-                    // Show a notification
-                    var toast = document.createElement('div');
-                    toast.className = 'toast-notification toast-remove';
-                    toast.innerHTML = '<i class="fas fa-check-circle"></i> ' + data.message;
-                    document.body.appendChild(toast);
-                    
-                    setTimeout(function() {
-                        toast.classList.add('show');
-                    }, 100);
-                    
-                    setTimeout(function() {
-                        toast.classList.remove('show');
-                        setTimeout(function() {
-                            document.body.removeChild(toast);
-                        }, 500);
-                    }, 3000);
-                }
-            })
-            .catch(function(error) {
-                console.error('Error removing actor:', error);
-            });
         }
         
         // Function to get CSRF token
@@ -521,9 +618,6 @@
             }
             return cookieValue;
         }
-        
-        // Check initial status
-        checkActorInList();
     });
 </script>
 {% endblock %} 

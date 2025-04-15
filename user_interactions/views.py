@@ -70,7 +70,6 @@ def add_actor_to_list(request, actor_id):
     # Debug information
     is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
     method = request.method
-    headers = {key: value for key, value in request.headers.items()}
     
     if actor not in user_list.actors.all():
         user_list.actors.add(actor)
@@ -169,12 +168,22 @@ def check_actor_in_list(request, actor_id):
 @login_required
 def view_user_list(request):
     user_list, created = UserList.objects.get_or_create(user=request.user)
-    return render(request, 'view_user_list.html', {'user_list': user_list})
+    # Get liked movies for the user
+    liked_movies = Movie.objects.filter(like__user=request.user)
+    return render(request, 'view_user_list.html', {
+        'user_list': user_list,
+        'liked_movies': liked_movies
+    })
 
 @login_required
 def view_favorite_movies(request):
     user_list, created = UserList.objects.get_or_create(user=request.user)
-    return render(request, 'favorite_movies.html', {'user_list': user_list})
+    # Get liked movies for the user
+    liked_movies = Movie.objects.filter(like__user=request.user)
+    return render(request, 'favorite_movies.html', {
+        'user_list': user_list,
+        'liked_movies': liked_movies
+    })
 
 @login_required
 def view_favorite_actors(request):

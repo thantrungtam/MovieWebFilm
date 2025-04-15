@@ -21,12 +21,13 @@
                     <h1 class="user-list-title mb-3">Bộ sưu tập của {{ user.username }}</h1>
                     <p class="lead">Khám phá bộ sưu tập của {{ user.username }} tuyển chọn.</p>
                     <div class="mt-3">
+                        <a href="{% url 'view_user_list' %}" class="btn btn-outline-light me-2">
+                            <i class="bi bi-collection"></i> Xem tất cả phim thêm xem sau
+                        </a>
                         <a href="{% url 'favorite_movies' %}" class="btn btn-outline-light me-2">
-                            <i class="bi bi-film"></i> Xem tất cả phim yêu thích
+                            <i class="bi bi-heart-fill"></i> Xem tất cả phim đã thích
                         </a>
-                        <a href="{% url 'favorite_actors' %}" class="btn btn-outline-light">
-                            <i class="bi bi-people-fill"></i> Xem tất cả diễn viên yêu thích
-                        </a>
+                        
                     </div>
                 </div>
             </div>
@@ -41,8 +42,8 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h2 class="card-title mb-0">Danh sách phim sưu tập</h2>
-                        <a href="{% url 'favorite_movies' %}" class="btn btn-outline-primary">
-                            <i class="bi bi-film"></i> Xem tất cả
+                        <a href="{% url 'view_user_list' %}" class="btn btn-outline-primary">
+                            <i class="bi bi-collection"></i> Xem tất cả
                         </a>
                     </div>
                     {% if user_list.movies.all %}
@@ -80,38 +81,42 @@
             <div class="card shadow-sm">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h2 class="card-title mb-0">Diễn viên yêu thích</h2>
-                        <a href="{% url 'favorite_actors' %}" class="btn btn-outline-primary">
-                            <i class="bi bi-person-lines-fill"></i> Xem tất cả
+                        <h2 class="card-title mb-0">Phim đã thích</h2>
+                        <a href="{% url 'favorite_movies' %}" class="btn btn-outline-primary">
+                            <i class="bi bi-heart-fill"></i> Xem tất cả
                         </a>
                     </div>
-                    {% if user_list.actors.all %}
+                    {% if liked_movies %}
                         <div class="row">
-                            {% for actor in user_list.actors.all|slice:":4" %}
+                            {% for movie in liked_movies|slice:":4" %}
                             <div class="col-md-3 mb-4">
-                                <div class="actor-item">
-                                    <a href="{% url 'actor_detail' actor.id %}" class="text-decoration-none">
-                                        {% if actor.image %}
-                                        <img src="{{ actor.image.url }}" alt="{{ actor.name }}" class="img-fluid rounded mb-2 actor-thumbnail">
-                                        {% else %}
-                                        <div class="no-image">
-                                            <i class="bi bi-person-fill"></i>
-                                        </div>
-                                        {% endif %}
-                                        <h5 class="actor-title">{{ actor.name }}</h5>
+                                <div class="movie-item">
+                                    <a href="{% url 'movie_detail' movie.id %}" class="text-decoration-none">
+                                        <img src="{{ movie.thumbnail.url }}" alt="{{ movie.title }}" class="img-fluid rounded mb-2 movie-thumbnail">
+                                        <h5 class="movie-title">{{ movie.title }}</h5>
                                     </a>
+                                    <div class="d-flex justify-content-between align-items-center mt-2">
+                                        <div class="movie-rating">
+                                            <i class="bi bi-star-fill text-warning"></i>
+                                            {{ movie.average_rating|floatformat:1 }}
+                                        </div>
+                                        <a href="{% url 'like_movie' movie.id %}" class="btn btn-danger btn-sm">
+                                            <i class="bi bi-heart-fill"></i> Bỏ thích
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
                             {% endfor %}
                         </div>
                     {% else %}
-                        <p class="text-muted">Bạn chưa thêm diễn viên yêu thích nào vào bộ sưu tập.</p>
+                        <p class="text-muted">Bạn chưa thích phim nào.</p>
                     {% endif %}
                 </div>
             </div>
         </div>
     </div>
-</div>
+
+    
 
 <style>
     /* Spacer to prevent content from overlapping with fixed navbar */

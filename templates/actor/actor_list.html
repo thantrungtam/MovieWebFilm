@@ -23,7 +23,13 @@
         <div class="col-md-2 mb-4">
             <a href="{% url 'actor_detail' actor.pk %}" class="text-decoration-none">
                 <div class="card actor-card h-100">
+                    {% if actor.image %}
                     <img src="{{ actor.image.url }}" class="card-img-top" alt="{{ actor.name }}">
+                    {% else %}
+                    <div class="default-actor-image">
+                        <i class="bi bi-person-fill"></i>
+                    </div>
+                    {% endif %}
                     <div class="actor-info">
                         <h5 class="card-title">{{ actor.name }}</h5>
                         {% if actor.alternate_name %}
@@ -112,6 +118,20 @@
         height: 100%;
         object-fit: cover;
         transition: filter var(--transition-speed);
+    }
+    
+    .default-actor-image {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: var(--secondary-color);
+        color: var(--text-light);
+        font-size: 3rem;
     }
     
     .actor-card:hover img {

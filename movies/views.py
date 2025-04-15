@@ -167,7 +167,7 @@ def search_movies(request):
     query = request.GET.get('q')
     if query:
         movies = Movie.objects.filter(
-            Q(title__icontains=query) | Q(description__icontains=query) | Q(genres__name__icontains=query) | Q(actors__name__icontains=query) 
+            Q(title__icontains=query) | Q(genres__name__icontains=query) | Q(actors__name__icontains=query) 
         )
     else:
         movies = []

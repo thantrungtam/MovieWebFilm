@@ -64,14 +64,8 @@
                                 </div>
                             </div>
 
-                            <div class="stat-item">
-                                <div class="stat-icon">
-                                    <i class="bi bi-eye"></i>
-                                </div>
-                                <div class="stat-text">
-                                    <span class="stat-label">Lượt xem</span>
-                                    <span class="stat-value">{{ movie.views }}</span>
-                                </div>
+                            
+                               
                             </div>
                         </div>
 
@@ -109,7 +103,7 @@
                             {% else %}
                             <a href="{% url 'add_to_list' movie.id %}" class="action-btn add-btn">
                                 <i class="bi bi-plus-lg"></i>
-                                <span>Thêm vào DS</span>
+                                <span>Thêm vào xem sau</span>
                             </a>
                             {% endif %}
                             {% endif %}
@@ -282,6 +276,55 @@
                     <div class="no-related">
                         <i class="bi bi-film"></i>
                         <p>Không tìm thấy phim liên quan.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Actors Card -->
+            <div class="content-card actors-card mt-4">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="bi bi-people-fill"></i>
+                        Diễn viên tham gia
+                    </h3>
+                </div>
+                <div class="card-body">
+                    {% if movie.actors.all %}
+                    <div class="actors-grid">
+                        {% for actor in movie.actors.all %}
+                        <div class="actor-item">
+                            <a href="{% url 'actor_detail' actor.id %}" class="actor-link">
+                                <div class="actor-photo">
+                                    {% if actor.image %}
+                                    <img src="{{ actor.image.url }}" alt="{{ actor.name }}">
+                                    {% else %}
+                                    <div class="no-image">
+                                        <i class="bi bi-person-fill"></i>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <div class="actor-info">
+                                    <h5 class="actor-name">{{ actor.name }}</h5>
+                                    {% if actor.alternate_name %}
+                                    <p class="actor-alt-name">{{ actor.alternate_name }}</p>
+                                    {% endif %}
+                                </div>
+                            </a>
+                            {% if user.is_authenticated %}
+                            <div class="actor-actions">
+                                <a href="{% url 'add_actor_to_list' actor.id %}" class="add-actor-btn" title="Thêm vào diễn viên yêu thích">
+                                    <i class="bi bi-plus-circle"></i>
+                                </a>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="no-actors">
+                        <i class="bi bi-people"></i>
+                        <p>Không có thông tin về diễn viên tham gia.</p>
                     </div>
                     {% endif %}
                 </div>
@@ -1040,6 +1083,122 @@
         75% {
             transform: translateX(5px);
         }
+    }
+
+    /* Actor styling */
+    .actors-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        grid-gap: 20px;
+    }
+    
+    .actor-item {
+        background-color: rgba(0, 0, 0, 0.2);
+        border-radius: 8px;
+        overflow: hidden;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        position: relative;
+    }
+    
+    .actor-item:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+    }
+    
+    .actor-link {
+        display: block;
+        color: var(--text-light);
+        text-decoration: none;
+        padding: 10px;
+    }
+    
+    .actor-photo {
+        width: 100%;
+        height: 160px;
+        border-radius: 5px;
+        overflow: hidden;
+        margin-bottom: 10px;
+    }
+    
+    .actor-photo img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+    
+    .actor-item:hover .actor-photo img {
+        transform: scale(1.05);
+    }
+    
+    .no-image {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #404040;
+        color: #e0e0e0;
+        font-size: 3rem;
+    }
+    
+    .actor-info {
+        padding: 0 5px;
+    }
+    
+    .actor-name {
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 5px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    .actor-alt-name {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        margin-bottom: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    .actor-actions {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        z-index: 2;
+    }
+    
+    .add-actor-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background-color: rgba(0, 0, 0, 0.6);
+        color: var(--primary-color);
+        transition: all 0.2s ease;
+    }
+    
+    .add-actor-btn:hover {
+        background-color: var(--primary-color);
+        color: white;
+        transform: scale(1.1);
+    }
+    
+    .no-actors {
+        text-align: center;
+        padding: 30px 0;
+    }
+    
+    .no-actors i {
+        font-size: 3rem;
+        color: var(--text-muted);
+        margin-bottom: 15px;
+        display: block;
     }
 </style>
 
