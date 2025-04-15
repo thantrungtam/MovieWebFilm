@@ -166,9 +166,35 @@ class MovieTrailerView(DetailView):
 def search_movies(request):
     query = request.GET.get('q')
     if query:
-        movies = Movie.objects.filter(
-            Q(title__icontains=query) | Q(genres__name__icontains=query) | Q(actors__name__icontains=query) 
-        )
+        # Tìm kiếm không dùng distinct() để giữ các kết quả trùng lặp
+        title_matches = Movie.objects.filter(title__icontains=query)
+        genre_matches = Movie.objects.filter(genres__name__icontains=query)
+        actor_matches = Movie.objects.filter(actors__name__icontains=query)
+        
+        # Kết hợp các kết quả từ 3 truy vấn
+        movies = list(title_matches) + list(genre_matches) + list(actor_matches)
+        
+        # Dict để theo dõi xem đã hiển thị phim và số lần xuất hiện
+        movie_counts = {}
+        unique_movies = []
+        
+        for movie in movies:
+            if movie.id not in movie_counts:
+                movie_counts[movie.id] = 1
+                movie.match_count = 1
+                unique_movies.append(movie)
+            else:
+                movie_counts[movie.id] += 1
+                # Cập nhật match_count cho phim đã có trong unique_movies
+                for unique_movie in unique_movies:
+                    if unique_movie.id == movie.id:
+                        unique_movie.match_count = movie_counts[movie.id]
+                        break
+        
+        # Sắp xếp phim theo số lần xuất hiện (giảm dần) và sau đó theo lượt xem (giảm dần)
+        unique_movies.sort(key=lambda x: (-x.match_count, -x.views))
+        
     else:
-        movies = []
-    return render(request, 'search_results.html', {'movies': movies, 'query': query})
+        unique_movies = []
+        
+    return render(request, 'search_results.html', {'movies': unique_movies, 'query': query})
