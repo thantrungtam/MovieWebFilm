@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% block title %}Đăng ký thành công - Mẹt Phim{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <i class="fas fa-envelope-open-text text-danger" style="font-size: 64px;"></i>
+                    </div>
+                    
+                    <h2 class="card-title text-center mb-4 text-danger fw-bold">Đăng ký thành công!</h2>
+                    
+                    <div class="alert alert-success">
+                        <p class="mb-0 text-center">Chúng tôi đã gửi email xác nhận đến <strong>{{ email }}</strong></p>
+                    </div>
+                    
+                    <div class="verification-steps mt-5">
+                        <h4 class="fw-bold">Các bước tiếp theo:</h4>
+                        <ol class="list-group list-group-numbered mt-3">
+                            <li class="list-group-item border-0 bg-light">
+                                <div class="ms-2 me-auto">
+                                    <div class="fw-bold">Kiểm tra hộp thư của bạn</div>
+                                    Tìm email có tiêu đề "Xác nhận đăng ký tài khoản Mẹt Phim"
+                                </div>
+                            </li>
+                            <li class="list-group-item border-0 bg-light">
+                                <div class="ms-2 me-auto">
+                                    <div class="fw-bold">Nhấp vào liên kết xác nhận</div>
+                                    Trong email có nút "Xác nhận email" để kích hoạt tài khoản
+                                </div>
+                            </li>
+                            <li class="list-group-item border-0 bg-light">
+                                <div class="ms-2 me-auto">
+                                    <div class="fw-bold">Đăng nhập và trải nghiệm</div>
+                                    Sau khi xác nhận, bạn có thể đăng nhập và sử dụng đầy đủ tính năng
+                                </div>
+                            </li>
+                        </ol>
+                    </div>
+                    
+                    <div class="alert alert-warning mt-4">
+                        <p class="mb-1"><i class="fas fa-exclamation-circle me-2"></i> <strong>Lưu ý:</strong></p>
+                        <ul class="mb-0">
+                            <li>Liên kết xác nhận có hiệu lực trong 24 giờ</li>
+                            <li>Nếu không tìm thấy email trong Hộp thư đến, vui lòng kiểm tra thư mục Spam hoặc Thư rác</li>
+                            <li>Đảm bảo rằng <strong>{{ email }}</strong> là địa chỉ email chính xác của bạn</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-center mt-4">
+                        <a href="{% url 'resend_confirmation' %}" class="btn btn-outline-danger">
+                            <i class="fas fa-paper-plane me-2"></i> Gửi lại email xác nhận
+                        </a>
+                        <a href="{% url 'login' %}" class="btn btn-danger">
+                            <i class="fas fa-sign-in-alt me-2"></i> Đến trang đăng nhập
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

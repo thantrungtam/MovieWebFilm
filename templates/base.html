@@ -744,6 +744,22 @@
         </div>
     </nav>
 
+    <!-- Messages Section -->
+    {% if messages %}
+    <div class="container mt-5 pt-3">
+        <div class="row">
+            <div class="col-12">
+                {% for message in messages %}
+                <div class="alert {% if message.tags %}alert-{{ message.tags }}{% else %}alert-info{% endif %} alert-dismissible fade show" role="alert">
+                    {{ message|safe }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
     <!-- Main Content -->
     {% block content %}
     {% endblock %}
@@ -847,6 +863,31 @@
             }
         });
     </script>
+    
+    <!-- Auto-dismiss email confirmation messages -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const emailConfirmationAlerts = document.querySelectorAll('.alert');
+            
+            emailConfirmationAlerts.forEach(alert => {
+                // Check if the alert contains email confirmation text
+                if (alert.textContent.toLowerCase().includes('email') && 
+                    alert.textContent.toLowerCase().includes('xác nhận')) {
+                    
+                    // Set a timeout to dismiss the alert
+                    setTimeout(() => {
+                        const closeButton = alert.querySelector('.btn-close');
+                        if (closeButton) {
+                            closeButton.click();
+                        } else {
+                            alert.style.display = 'none';
+                        }
+                    }, 5000); // Dismiss after 5 seconds
+                }
+            });
+        });
+    </script>
+    
     {% block additional_scripts %}{% endblock %}
 </body>
 

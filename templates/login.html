@@ -41,9 +41,15 @@
                             </a>
                         </div>
 
-                        <div class="d-grid">
+                        <div class="d-grid mb-2">
                             <a class="btn btn-outline-secondary btn-lg text-danger" href="{% url 'register' %}">
                                 <i class="fas fa-user-plus me-2"></i>Đăng kí tài khoản
+                            </a>
+                        </div>
+
+                        <div class="text-center">
+                            <a href="{% url 'resend_confirmation' %}" class="text-decoration-none text-secondary">
+                                <i class="fas fa-envelope me-1"></i>Chưa nhận được email xác nhận?
                             </a>
                         </div>
                     </form>

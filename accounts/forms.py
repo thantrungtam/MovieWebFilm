@@ -1,11 +1,53 @@
 from django import forms
-from django.contrib.auth import get_user_model
-from django.contrib.auth.forms import UserChangeForm, AuthenticationForm, UserCreationForm
+from django.contrib.auth import get_user_model, authenticate
+from django.contrib.auth.forms import UserChangeForm, AuthenticationForm, UserCreationForm as BaseUserCreationForm
 from .models import Profile
+from django.core.exceptions import ValidationError
 
 class CustomLoginForm(AuthenticationForm):
-    username = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control'}))
-    password = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control'}))
+    username = forms.CharField(
+        label="Tên đăng nhập hoặc Email",
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nhập tên đăng nhập hoặc địa chỉ email'})
+    )
+    password = forms.CharField(
+        label="Mật khẩu",
+        widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Nhập mật khẩu'})
+    )
+    
+    def clean(self):
+        username = self.cleaned_data.get('username')
+        password = self.cleaned_data.get('password')
+
+        if username is not None and password:
+            # Kiểm tra xem người dùng đang đăng nhập bằng email hay username
+            if '@' in username:
+                # Tìm user bằng email
+                UserModel = get_user_model()
+                try:
+                    user = UserModel.objects.get(email=username)
+                    if user:
+                        # Nếu tìm thấy, dùng username của user để xác thực
+                        self.user_cache = authenticate(self.request, username=user.username, password=password)
+                except UserModel.DoesNotExist:
+                    raise ValidationError(
+                        self.error_messages['invalid_login'],
+                        code='invalid_login',
+                        params={'username': self.username_field.verbose_name},
+                    )
+            else:
+                # Đăng nhập bình thường bằng username
+                self.user_cache = authenticate(self.request, username=username, password=password)
+                
+            if self.user_cache is None:
+                raise ValidationError(
+                    self.error_messages['invalid_login'],
+                    code='invalid_login',
+                    params={'username': self.username_field.verbose_name},
+                )
+            else:
+                self.confirm_login_allowed(self.user_cache)
+
+        return self.cleaned_data
 
 User = get_user_model()
 
@@ -46,4 +88,43 @@ class UserProfileForm(forms.ModelForm):
             if self.cleaned_data.get('profile_picture'):
                 profile.profile_photo = self.cleaned_data['profile_picture']
             profile.save()
+        return user
+
+class UserCreationForm(BaseUserCreationForm):
+    email = forms.EmailField(required=True, help_text="Bắt buộc. Nhập địa chỉ email hợp lệ.")
+    first_name = forms.CharField(max_length=30, required=False, help_text="Không bắt buộc.")
+    last_name = forms.CharField(max_length=30, required=False, help_text="Không bắt buộc.")
+    profile_picture = forms.ImageField(required=False, help_text="Không bắt buộc. Tải lên ảnh đại diện.")
+    
+    class Meta:
+        model = User
+        fields = ('username', 'email', 'first_name', 'last_name', 'password1', 'password2')
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Thêm các classes cho các trường để styling
+        for field_name in self.fields:
+            self.fields[field_name].widget.attrs.update({'class': 'form-control'})
+    
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if User.objects.filter(email=email).exists():
+            raise forms.ValidationError("Email này đã được sử dụng. Vui lòng chọn email khác.")
+        return email
+    
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.email = self.cleaned_data['email']
+        user.first_name = self.cleaned_data['first_name']
+        user.last_name = self.cleaned_data['last_name']
+        user.is_active = False  # Người dùng sẽ không active cho đến khi xác thực email
+        
+        if commit:
+            user.save()
+            # Tạo profile khi đăng ký
+            profile = Profile.objects.create(user=user)
+            if self.cleaned_data.get('profile_picture'):
+                profile.profile_photo = self.cleaned_data['profile_picture']
+                profile.save()
+                
         return user

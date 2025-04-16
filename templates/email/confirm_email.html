@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Xác nhận đăng ký tài khoản Mẹt Phim</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .email-container {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .logo {
+            max-width: 150px;
+            margin-bottom: 10px;
+        }
+        h1 {
+            color: #ff4757;
+            margin-bottom: 20px;
+        }
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #ff4757;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .footer {
+            margin-top: 30px;
+            font-size: 12px;
+            color: #777;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="header">
+            <h1>Mẹt Phim</h1>
+        </div>
+        
+        <p>Xin chào <strong>{{ user.username }}</strong>,</p>
+        
+        <p>Cảm ơn bạn đã đăng ký tài khoản tại Mẹt Phim. Để hoàn tất quá trình đăng ký, vui lòng xác nhận địa chỉ email của bạn bằng cách nhấp vào nút bên dưới:</p>
+        
+        <div style="text-align: center;">
+            <a href="{{ confirmation_link }}" class="button">Xác nhận email</a>
+        </div>
+        
+        <p>Hoặc bạn có thể sao chép và dán liên kết này vào trình duyệt của bạn:</p>
+        
+        <p style="word-break: break-all;">{{ confirmation_link }}</p>
+        
+        <p>Liên kết xác nhận này sẽ hết hạn sau 24 giờ. Nếu bạn không thực hiện xác nhận trong thời gian này, bạn cần đăng ký lại.</p>
+        
+        <p>Nếu bạn không thực hiện đăng ký tài khoản tại Mẹt Phim, vui lòng bỏ qua email này.</p>
+        
+        <p>Trân trọng,<br>
+        Đội ngũ Mẹt Phim</p>
+        
+        <div class="footer">
+            <p>Email này được gửi tự động, vui lòng không trả lời.</p>
+            <p>&copy; 2023 Mẹt Phim. Tất cả quyền được bảo lưu.</p>
+        </div>
+    </div>
+</body>
+</html> 

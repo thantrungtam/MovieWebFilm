@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block title %}Gửi lại email xác nhận - Mẹt Phim{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <h2 class="card-title text-center mb-4 text-danger fw-bold">Gửi lại email xác nhận</h2>
+                    
+                    {% if messages %}
+                    <div class="mb-4">
+                        {% for message in messages %}
+                        <div class="alert {% if message.tags == 'success' %}alert-success{% else %}alert-danger{% endif %} alert-dismissible fade show">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="email" class="form-label fw-semibold">Email đăng ký</label>
+                            <input type="email" class="form-control" id="email" name="email" required placeholder="Nhập email bạn đã dùng để đăng ký">
+                            <div class="form-text">Nhập email bạn đã dùng khi đăng ký tài khoản.</div>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-danger btn-lg">
+                                <i class="fas fa-envelope me-2"></i> Gửi lại email xác nhận
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <div class="mt-4 text-center">
+                        <p>Đã có tài khoản? <a href="{% url 'login' %}" class="text-decoration-none text-danger">Đăng nhập</a></p>
+                        <p>Chưa có tài khoản? <a href="{% url 'register' %}" class="text-decoration-none text-danger">Đăng ký mới</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
