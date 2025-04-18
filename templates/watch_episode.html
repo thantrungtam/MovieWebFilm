@@ -1,0 +1,358 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ episode.title }} - {{ movie.title }} - Mẹt Phim{% endblock %}
+
+{% block additional_styles %}
+<style>
+    /* Video Player Container */
+    .video-player-container {
+        position: relative;
+        background-color: #000;
+        margin-bottom: 1.5rem;
+        border-radius: var(--border-radius);
+        overflow: hidden;
+    }
+    
+    .video-player {
+        width: 100%;
+        aspect-ratio: 16/9;
+        background-color: #000;
+    }
+    
+    /* Premium Overlay */
+    .premium-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.8);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 2rem;
+        z-index: 10;
+    }
+    
+    .premium-overlay h3 {
+        color: #ffd700;
+        margin-bottom: 1rem;
+        font-weight: 700;
+    }
+    
+    .premium-overlay p {
+        color: white;
+        margin-bottom: 1.5rem;
+        max-width: 600px;
+    }
+    
+    .premium-badge {
+        background-color: #ffd700;
+        color: #000;
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        display: inline-block;
+    }
+    
+    /* Episode Navigation */
+    .episode-navigation {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 1.5rem;
+    }
+    
+    .nav-button {
+        padding: 0.5rem 1.2rem;
+        border-radius: 50px;
+        background-color: var(--card-bg);
+        color: var(--text-light);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .nav-button:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+        transform: translateY(-2px);
+    }
+    
+    .nav-button.disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    
+    .nav-button.disabled:hover {
+        transform: none;
+    }
+    
+    /* Episodes List */
+    .episodes-container {
+        background-color: var(--card-bg);
+        border-radius: var(--border-radius);
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .episodes-title {
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+        color: var(--text-light);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .episodes-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 15px;
+    }
+    
+    .episode-item {
+        position: relative;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        transition: transform 0.3s, box-shadow 0.3s;
+    }
+    
+    .episode-item:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+    }
+    
+    .episode-item.active {
+        border: 2px solid var(--primary-color);
+    }
+    
+    .episode-thumb {
+        width: 100%;
+        aspect-ratio: 16/9;
+        background-color: var(--dark-bg);
+        position: relative;
+    }
+    
+    .episode-thumb img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .episode-number {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        background-color: rgba(0, 0, 0, 0.7);
+        color: white;
+        padding: 3px 8px;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+    
+    .episode-play {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+    
+    .episode-item:hover .episode-play {
+        opacity: 1;
+    }
+    
+    .play-icon {
+        width: 40px;
+        height: 40px;
+        background-color: rgba(255, 71, 87, 0.9);
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: white;
+        font-size: 1.2rem;
+    }
+    
+    .episode-info {
+        padding: 10px;
+        background-color: var(--card-bg);
+    }
+    
+    .episode-title {
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: var(--text-light);
+        margin-bottom: 5px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    .episode-duration {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    
+    /* Responsive Adjustments */
+    @media (max-width: 768px) {
+        .episodes-list {
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .episode-navigation {
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .episodes-list {
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5 pt-5">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-3">{{ movie.title }} - {{ episode.title }}</h1>
+            
+            <!-- Video Player -->
+            <div class="video-player-container">
+                {% if has_premium_access %}
+                    {% if episode.video_file %}
+                    <video class="video-player" controls>
+                        <source src="{{ episode.video_file.url }}" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                    {% elif episode.video_link %}
+                    <iframe class="video-player" src="{{ episode.video_link }}" frameborder="0" allowfullscreen></iframe>
+                    {% elif episode.streaming_link %}
+                    <iframe class="video-player" src="{{ episode.streaming_link }}" frameborder="0" allowfullscreen></iframe>
+                    {% else %}
+                    <div class="video-player d-flex justify-content-center align-items-center">
+                        <p class="text-light">Không tìm thấy nguồn phim.</p>
+                    </div>
+                    {% endif %}
+                {% else %}
+                <div class="premium-overlay">
+                    <span class="premium-badge">PREMIUM</span>
+                    <h3>Nội dung Premium</h3>
+                    <p>Nâng cấp tài khoản lên Premium để xem tập phim này và tất cả nội dung Premium khác.</p>
+                    <a href="{% url 'payment:subscription_plans' %}" class="btn watch-btn">
+                        <i class="bi bi-star-fill"></i> Nâng cấp Premium ngay
+                    </a>
+                </div>
+                <div class="video-player d-flex justify-content-center align-items-center bg-dark">
+                    {% if episode.thumbnail %}
+                    <img src="{{ episode.thumbnail.url }}" alt="{{ episode.title }}" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.5;">
+                    {% elif movie.thumbnail %}
+                    <img src="{{ movie.thumbnail.url }}" alt="{{ movie.title }}" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.5;">
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Episode Navigation -->
+            <div class="episode-navigation">
+                {% if prev_episode %}
+                <a href="{% url 'watch_episode' movie.id prev_episode.episode_number %}" class="nav-button">
+                    <i class="bi bi-chevron-left"></i>
+                    Tập trước
+                </a>
+                {% else %}
+                <button class="nav-button disabled">
+                    <i class="bi bi-chevron-left"></i>
+                    Tập trước
+                </button>
+                {% endif %}
+                
+                <a href="{% url 'movie_detail' movie.id %}" class="nav-button">
+                    <i class="bi bi-info-circle"></i>
+                    Thông tin phim
+                </a>
+                
+                {% if next_episode %}
+                <a href="{% url 'watch_episode' movie.id next_episode.episode_number %}" class="nav-button">
+                    Tập sau
+                    <i class="bi bi-chevron-right"></i>
+                </a>
+                {% else %}
+                <button class="nav-button disabled">
+                    Tập sau
+                    <i class="bi bi-chevron-right"></i>
+                </button>
+                {% endif %}
+            </div>
+            
+            <!-- Episode Description -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h3>Tập {{ episode.episode_number }}: {{ episode.title }}</h3>
+                    {% if episode.description %}
+                    <p>{{ episode.description }}</p>
+                    {% else %}
+                    <p>Không có mô tả cho tập phim này.</p>
+                    {% endif %}
+                    {% if episode.duration %}
+                    <p><i class="bi bi-clock"></i> Thời lượng: {{ episode.duration }} phút</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Episodes List -->
+            <div class="episodes-container">
+                <h3 class="episodes-title">
+                    <i class="bi bi-collection-play"></i> Danh sách tập
+                </h3>
+                <div class="episodes-list">
+                    {% for ep in episodes %}
+                    <a href="{% url 'watch_episode' movie.id ep.episode_number %}" class="episode-item {% if ep.episode_number == episode.episode_number %}active{% endif %}">
+                        <div class="episode-thumb">
+                            {% if ep.thumbnail %}
+                            <img src="{{ ep.thumbnail.url }}" alt="Tập {{ ep.episode_number }}">
+                            {% elif movie.thumbnail %}
+                            <img src="{{ movie.thumbnail.url }}" alt="Tập {{ ep.episode_number }}">
+                            {% endif %}
+                            <span class="episode-number">Tập {{ ep.episode_number }}</span>
+                            <div class="episode-play">
+                                <div class="play-icon">
+                                    <i class="bi bi-play-fill"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="episode-info">
+                            <h5 class="episode-title">{{ ep.title }}</h5>
+                            {% if ep.duration %}
+                            <div class="episode-duration">
+                                <i class="bi bi-clock"></i>
+                                <span>{{ ep.duration }} phút</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

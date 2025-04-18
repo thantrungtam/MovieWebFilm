@@ -1,0 +1,256 @@
+{% extends 'base.html' %}
+
+{% block title %}Lịch Chiếu Phim - Mẹt Phim{% endblock %}
+
+{% block additional_styles %}
+<style>
+    .schedule-section {
+        padding: 2rem 0;
+    }
+
+    .screening-date {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: var(--primary-color);
+    }
+
+    .screening-time {
+        font-size: 0.95rem;
+        font-weight: 500;
+        margin-bottom: 1rem;
+        color: var(--text-light);
+    }
+
+    .coming-soon-label {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: rgba(0, 0, 0, 0.7);
+        color: white;
+        padding: 10px 20px;
+        border-radius: 20px;
+        font-weight: bold;
+        font-size: 1.2rem;
+        z-index: 15;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    }
+    
+    .movie-card {
+        position: relative;
+        height: 0;
+        padding-top: 150%;
+        overflow: hidden;
+        border-radius: var(--border-radius);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        transition: transform var(--transition-speed);
+        margin-bottom: 20px;
+    }
+
+    .movie-card:hover {
+        transform: scale(1.03);
+    }
+    
+    .movie-card img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .movie-tag {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.8rem;
+        z-index: 10;
+        text-transform: uppercase;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+    
+    .movie-type-badge {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        z-index: 10;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+
+    .series-badge {
+        background-color: #3498db;
+        color: white;
+    }
+
+    .single-badge {
+        background-color: #9b59b6;
+        color: white;
+    }
+    
+    .premium-tag {
+        background-color: #ffd700;
+        color: #000;
+    }
+
+    .free-tag {
+        background-color: #2ecc71;
+        color: #fff;
+    }
+    
+    .movie-info {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.7) 60%, transparent 100%);
+        padding: 20px;
+        color: var(--text-light);
+        transform: translateY(0);
+        transition: transform var(--transition-speed);
+    }
+
+    .movie-card:hover .movie-info {
+        transform: translateY(-10px);
+    }
+
+    .movie-info h5 {
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 10px;
+    }
+
+    .movie-stats {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 15px;
+    }
+
+    .movie-stat {
+        display: flex;
+        align-items: center;
+        font-size: 0.9rem;
+    }
+
+    .movie-stat i {
+        margin-right: 5px;
+    }
+
+    .rating-icon {
+        color: #ffc107;
+    }
+
+    .views-icon {
+        color: var(--secondary-color);
+    }
+
+    .likes-icon {
+        color: var(--primary-color);
+    }
+    
+    .watch-btn {
+        width: 100%;
+        margin-top: 0.5rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .watch-btn i {
+        margin-right: 8px;
+    }
+    
+    @media (max-width: 768px) {
+        .coming-soon-label {
+            font-size: 1rem;
+            padding: 8px 16px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5 pt-5">
+    <h1 class="mb-4">Lịch chiếu phim</h1>
+
+    {% if not movies %}
+    <div class="alert alert-info">
+        Hiện tại không có phim nào trong lịch chiếu sắp tới.
+    </div>
+    {% endif %}
+
+    <div class="row schedule-section">
+        {% for movie in movies %}
+        <div class="col-lg-4 col-md-6 col-sm-6 mb-4">
+            <div class="movie-card">
+                <a href="{% url 'movie_detail' movie.id %}">
+                    <img src="{{ movie.thumbnail.url }}" alt="{{ movie.title }}">
+                    
+                    {% if movie.is_premium %}
+                    <span class="movie-tag premium-tag">Premium</span>
+                    {% else %}
+                    <span class="movie-tag free-tag">Free</span>
+                    {% endif %}
+
+                    {% if movie.movie_type == 'series' %}
+                    <span class="movie-type-badge series-badge">Phim bộ</span>
+                    {% else %}
+                    <span class="movie-type-badge single-badge">Phim lẻ</span>
+                    {% endif %}
+
+                    {% now "Y-m-d H:i:s" as current_time %}
+                    {% if movie.screening_schedule|date:"Y-m-d H:i:s" > current_time %}
+                    <div class="coming-soon-label">Sắp chiếu</div>
+                    {% endif %}
+
+                    <div class="movie-info">
+                        <h5>{{ movie.title }}</h5>
+                        <div class="movie-stats">
+                            <div class="movie-stat">
+                                <i class="bi bi-star-fill rating-icon"></i>
+                                <span>{{ movie.average_rating|floatformat:1 }}</span>
+                            </div>
+                            <div class="movie-stat">
+                                <i class="bi bi-eye-fill views-icon"></i>
+                                <span>{{ movie.views }}</span>
+                            </div>
+                            <div class="movie-stat">
+                                <i class="bi bi-heart-fill likes-icon"></i>
+                                <span>{{ movie.like_count }}</span>
+                            </div>
+                        </div>
+                        <div class="screening-date">
+                            <i class="bi bi-calendar-date me-1"></i>
+                            Ngày chiếu: {{ movie.screening_schedule|date:"d/m/Y" }}
+                        </div>
+                        <div class="screening-time">
+                            <i class="bi bi-clock me-1"></i>
+                            Giờ chiếu: {{ movie.screening_schedule|time:"H:i" }}
+                        </div>
+                        
+                        {% now "Y-m-d H:i:s" as current_time %}
+                        {% if movie.screening_schedule|date:"Y-m-d H:i:s" <= current_time %}
+                        <a href="{% url 'watch_movie' movie.id %}" class="btn watch-btn">
+                            <i class="bi bi-play-fill"></i> Xem phim
+                        </a>
+                        {% else %}
+                        <a href="{% url 'movie_detail' movie.id %}" class="btn watch-btn">
+                            <i class="bi bi-info-circle"></i> Chi tiết
+                        </a>
+                        {% endif %}
+                    </div>
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %} 

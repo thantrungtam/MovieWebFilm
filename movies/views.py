@@ -1,17 +1,16 @@
 from django.views.generic import ListView, DetailView
 from django.http import JsonResponse
-from .models import Movie, Genre
+from .models import Movie, Genre, Episode
 from user_interactions.models import UserList, Rating, Like, Comment
 from django.db.models import F, Count, Avg
 from django.utils import timezone
 from datetime import timedelta
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.apps import AppConfig
-from django.shortcuts import render, get_object_or_404
-from .models import Movie
 from django.db.models import Q
 from actor.models import Actor
+from django.contrib import messages
 
 
 class HomeView(ListView):
@@ -72,6 +71,11 @@ class MovieDetailView(DetailView):
         movie.comments = movie.get_comments()
         related_movies = self.get_related_movies(movie)
         context['related_movies'] = related_movies
+        
+        # Add episodes for series movies
+        if movie.movie_type == 'series':
+            context['episodes'] = movie.episodes.all().order_by('episode_number')
+        
         user = self.request.user
         if user.is_authenticated:
             # Check if the movie is in any of the user's lists
@@ -115,14 +119,24 @@ class MoviesView(ListView):
     template_name = 'movies.html'
     context_object_name = 'movies'
 
+    def get_queryset(self):
+        movie_type = self.request.GET.get('type', 'all')
+        if movie_type == 'series':
+            return Movie.objects.filter(movie_type='series')
+        elif movie_type == 'single':
+            return Movie.objects.filter(movie_type='single')
+        else:
+            return Movie.objects.all()
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        movies = Movie.objects.all()
+        movies = self.get_queryset()
         for movie in movies:
             movie.like_count = movie.get_like_count()
             movie.average_rating = movie.get_average_rating()
         context['movies'] = movies
         context['genres'] = Genre.objects.all()
+        context['current_type'] = self.request.GET.get('type', 'all')
         
         # Featured movies for the slider (using the top 3 trending movies)
         featured_movies = self.get_featured_movies()
@@ -215,3 +229,59 @@ def search_movies(request):
         'actors': actors, 
         'query': query
     })
+
+class ScreeningScheduleView(ListView):
+    model = Movie
+    template_name = 'screening_schedule.html'
+    context_object_name = 'movies'
+
+    def get_queryset(self):
+        now = timezone.now()
+        # Get movies with screening schedule in the future
+        return Movie.objects.filter(screening_schedule__gte=now).order_by('screening_schedule')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        movies = self.get_queryset()
+        for movie in movies:
+            movie.like_count = movie.get_like_count()
+            movie.average_rating = movie.get_average_rating()
+        context['movies'] = movies
+        return context
+
+def watch_episode(request, movie_id, episode_number):
+    movie = get_object_or_404(Movie, id=movie_id)
+    
+    # Check if movie has a future screening schedule
+    if movie.screening_schedule and movie.screening_schedule > timezone.now():
+        messages.info(request, f'Phim "{movie.title}" chưa đến thời gian chiếu. Vui lòng quay lại vào ngày {movie.screening_schedule.strftime("%d/%m/%Y %H:%M")}.')
+        return redirect('movie_detail', pk=movie_id)
+    
+    episode = get_object_or_404(Episode, movie=movie, episode_number=episode_number)
+    
+    # Get all episodes for the navigation
+    episodes = movie.episodes.all().order_by('episode_number')
+    
+    # Get next and previous episodes
+    next_episode = episodes.filter(episode_number__gt=episode_number).order_by('episode_number').first()
+    prev_episode = episodes.filter(episode_number__lt=episode_number).order_by('-episode_number').first()
+    
+    # Check if this is a premium movie
+    is_premium_content = movie.is_premium
+    
+    # Check if user is premium (simplified for now)
+    # In a real implementation, you would check the user's subscription status
+    is_premium_user = request.user.is_authenticated and hasattr(request, 'is_premium') and request.is_premium
+    has_premium_access = not is_premium_content or is_premium_user
+    
+    context = {
+        'movie': movie,
+        'episode': episode,
+        'episodes': episodes,
+        'next_episode': next_episode,
+        'prev_episode': prev_episode,
+        'is_premium_content': is_premium_content,
+        'has_premium_access': has_premium_access,
+    }
+    
+    return render(request, 'watch_episode.html', context)
