@@ -8,9 +8,10 @@ from django.contrib.auth import views as auth_views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('movies.urls')),
-    path('', include('actor.urls')),
+    path('', include('actor.urls', namespace='actor')),
     path('user/', include('user_interactions.urls')),
     path('accounts/', include('accounts.urls')),
+    path('payment/', include('payment.urls', namespace='payment')),
     
 
     # Reset password URL

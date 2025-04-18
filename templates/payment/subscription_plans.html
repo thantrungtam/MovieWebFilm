@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Subscription Plans{% endblock %}
+
+{% block additional_styles %}
+<style>
+    .payment-header {
+        padding-top: 80px;
+        margin-bottom: 30px;
+    }
+    
+    .subscription-container {
+        padding-top: 70px;
+    }
+    
+    .plan-card {
+        height: 100%;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: none;
+    }
+    
+    .plan-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+    }
+    
+    .plan-header {
+        background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+        color: white;
+        padding: 20px;
+        border-top-left-radius: var(--border-radius);
+        border-top-right-radius: var(--border-radius);
+    }
+    
+    .plan-price {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--primary-color);
+    }
+    
+    .plan-features li {
+        padding: 10px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .plan-features li:last-child {
+        border-bottom: none;
+    }
+    
+    .subscription-btn {
+        background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+        border: none;
+        font-weight: 600;
+    }
+    
+    .subscription-btn:hover {
+        background: linear-gradient(45deg, var(--secondary-color), var(--primary-color));
+        transform: translateY(-3px);
+        box-shadow: 0 7px 14px rgba(255, 71, 87, 0.3);
+    }
+    
+    .current-plan {
+        background: rgba(40, 167, 69, 0.1);
+        border: 1px solid rgba(40, 167, 69, 0.2);
+        border-radius: var(--border-radius);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="text-center mb-4">Choose a Subscription Plan</h1>
+    
+    {% if current_subscription %}
+    <div class="alert alert-info mb-4">
+        <h4>Your Current Subscription</h4>
+        <p>Plan: {{ current_subscription.plan.name }}</p>
+        <p>Status: {% if current_subscription.is_active %}Active{% else %}Inactive{% endif %}</p>
+        <p>Expires: {{ current_subscription.end_date }}</p>
+    </div>
+    {% endif %}
+    
+    <div class="row">
+        {% for plan in subscription_plans %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="card-title text-center mb-0">{{ plan.name }}</h3>
+                </div>
+                <div class="card-body d-flex flex-column">
+                    <h4 class="text-center text-primary mb-3">{{ plan.price }} VND</h4>
+                    <p class="text-center mb-3">
+                        {% if plan.duration_months == 1 %}
+                            1 Month
+                        {% elif plan.duration_months == 3 %}
+                            3 Months
+                        {% elif plan.duration_months == 6 %}
+                            6 Months
+                        {% endif %}
+                    </p>
+                    
+                    <ul class="list-group list-group-flush mb-4">
+                        <li class="list-group-item"><i class="fas fa-check text-success"></i> Ad-free streaming</li>
+                        <li class="list-group-item"><i class="fas fa-check text-success"></i> HD video quality</li>
+                        {% if plan.duration_months >= 3 %}
+                        <li class="list-group-item"><i class="fas fa-check text-success"></i> Offline viewing</li>
+                        {% endif %}
+                        {% if plan.duration_months >= 6 %}
+                        <li class="list-group-item"><i class="fas fa-check text-success"></i> Premium support</li>
+                        {% endif %}
+                    </ul>
+                    
+                    <div class="mt-auto">
+                        <form action="{% url 'payment:process_subscription' plan.id %}" method="post" class="text-center">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-primary btn-lg">Subscribe Now</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-dark">
+                    <h4 class="mb-0 text-white">Các lợi ích khi đăng ký Premium</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5><i class="fas fa-ad text-danger me-2"></i>Không quảng cáo</h5>
+                            <p>Xem phim không bị gián đoạn bởi quảng cáo, mang lại trải nghiệm xem phim liền mạch.</p>
+                            
+                            <h5><i class="fas fa-film text-primary me-2"></i>Nội dung độc quyền</h5>
+                            <p>Truy cập các bộ phim độc quyền chỉ dành cho người dùng Premium.</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h5><i class="fas fa-download text-success me-2"></i>Tải xuống và xem ngoại tuyến</h5>
+                            <p>Tải phim về thiết bị và xem khi không có kết nối internet.</p>
+                            
+                            <h5><i class="fas fa-headset text-warning me-2"></i>Hỗ trợ ưu tiên</h5>
+                            <p>Nhận hỗ trợ nhanh chóng và ưu tiên từ đội ngũ chăm sóc khách hàng của chúng tôi.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

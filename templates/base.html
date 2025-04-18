@@ -204,6 +204,43 @@
             object-fit: cover;
         }
 
+        /* Movie Tags */
+        .movie-tag {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            z-index: 10;
+            text-transform: uppercase;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .premium-tag {
+            background-color: #ffd700;
+            color: #000;
+        }
+
+        .free-tag {
+            background-color: #2ecc71;
+            color: #fff;
+        }
+
+        /* For carousel items */
+        .carousel-image-wrapper {
+            position: relative;
+        }
+
+        .carousel-image-wrapper .movie-tag {
+            top: 20px;
+            right: 20px;
+            padding: 7px 15px;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+        }
+
         .movie-info {
             position: absolute;
             bottom: 0;
@@ -603,10 +640,9 @@
         }
 
         .watch-btn:hover {
-            background: var(--primary-dark);
-            transform: translateY(-3px);
-            box-shadow: 0 7px 14px rgba(255, 71, 87, 0.3);
-            color: white;
+            background: linear-gradient(45deg, var(--primary-dark), var(--primary-color));
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
         }
 
         .watch-btn i {
@@ -637,6 +673,130 @@
             margin-top: 0.5rem;
             padding: 0.6rem 1.2rem;
             font-size: 0.95rem;
+        }
+
+        /* Detail page tags */
+        .poster-container {
+            position: relative;
+        }
+
+        .detail-premium-tag, .detail-free-tag {
+            top: 15px;
+            right: 15px;
+            font-size: 1rem;
+            padding: 6px 14px;
+        }
+
+        /* Toast Notifications */
+        .toast-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .toast {
+            min-width: 300px;
+            padding: 15px 20px;
+            border-radius: 8px;
+            color: white;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            animation: slide-in 0.3s ease-out forwards;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .toast.success {
+            background-color: #28a745;
+        }
+        
+        .toast.info {
+            background-color: #17a2b8;
+        }
+        
+        .toast.warning {
+            background-color: #ffc107;
+            color: #212529;
+        }
+        
+        .toast.error {
+            background-color: #dc3545;
+        }
+        
+        .toast .toast-content {
+            flex: 1;
+        }
+        
+        .toast .toast-close {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-size: 1.2rem;
+            margin-left: 10px;
+            padding: 0;
+        }
+        
+        .toast.warning .toast-close {
+            color: #212529;
+        }
+        
+        .toast-progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .toast-progress-bar {
+            height: 100%;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.7);
+            transform-origin: left;
+            animation: progress 3s linear forwards;
+        }
+        
+        .toast.warning .toast-progress-bar {
+            background: rgba(0, 0, 0, 0.2);
+        }
+        
+        @keyframes slide-in {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes slide-out {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+        
+        @keyframes progress {
+            from {
+                transform: scaleX(1);
+            }
+            to {
+                transform: scaleX(0);
+            }
         }
     </style>
     {% block additional_styles %}{% endblock %}
@@ -692,7 +852,7 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'actor_list' %}">
+                        <a class="nav-link" href="{% url 'actor:actor_list' %}">
                             <i class="bi bi-people-fill me-1"></i>
                             Diễn viên
                         </a>
@@ -703,14 +863,18 @@
                             role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             {% if user.profile.profile_photo %}
                             <img src="{{ user.profile.profile_photo.url }}" alt="{{ user.username }}"
-                                class="rounded-circle me-2 profile-photo">
+                                class="rounded-circle me-2" width="30" height="30">
                             {% else %}
-                            <div
-                                class="rounded-circle me-2 profile-photo bg-primary d-flex align-items-center justify-content-center">
+                            <div class="avatar-placeholder me-2">
                                 {{ user.username|make_list|first|upper }}
                             </div>
                             {% endif %}
                             <span>{{ user.username }}</span>
+                            {% if is_premium %}
+                            <span class="badge bg-warning text-dark ms-2">Premium</span>
+                            {% else %}
+                            <span class="badge bg-secondary ms-2">Free</span>
+                            {% endif %}
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
                             <li><a class="dropdown-item" href="{% url 'my_account' %}">
@@ -719,7 +883,15 @@
                             <li><a class="dropdown-item" href="{% url 'view_user_list' %}">
                                     <i class="bi bi-collection-play me-2"></i>Bộ sưu tập phim
                                 </a></li>
-                          
+                            <li><a class="dropdown-item" href="{% url 'payment:subscription_plans' %}">
+                                    <i class="bi bi-star-fill me-2"></i>
+                                    {% if is_premium %}
+                                    Gói Premium của bạn
+                                    {% else %}
+                                    Nâng cấp Premium
+                                    {% endif %}
+                                </a></li>
+                            <li>
                                 <hr class="dropdown-divider">
                             </li>
                             <li>
@@ -744,7 +916,8 @@
         </div>
     </nav>
 
-    <!-- Messages Section -->
+    <!-- Messages Section - Obsolete, using toast notifications -->
+    {% comment %}
     {% if messages %}
     <div class="container mt-5 pt-3">
         <div class="row">
@@ -759,9 +932,23 @@
         </div>
     </div>
     {% endif %}
+    {% endcomment %}
 
     <!-- Main Content -->
     {% block content %}
+    {% endblock %}
+
+    <!-- Custom Toast Notifications -->
+    <div id="toast-container" class="toast-container"></div>
+    
+    {% block custom_messages %}
+    {% if messages %}
+    <div class="toast-messages" style="display:none;">
+        {% for message in messages %}
+        <div class="message" data-type="{{ message.tags|default:'info' }}">{{ message|safe }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
     {% endblock %}
 
     <!-- Footer -->
@@ -830,8 +1017,68 @@
             }
         });
 
-        // Initialize tooltips
+        // Toast Notification System
+        function showToast(message, type = 'info') {
+            const toastContainer = document.getElementById('toast-container');
+            
+            // Create toast element
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            // Create toast content
+            const toastContent = document.createElement('div');
+            toastContent.className = 'toast-content';
+            toastContent.innerHTML = message;
+            
+            // Create close button
+            const closeButton = document.createElement('button');
+            closeButton.className = 'toast-close';
+            closeButton.innerHTML = '&times;';
+            closeButton.addEventListener('click', () => removeToast(toast));
+            
+            // Create progress bar
+            const progressContainer = document.createElement('div');
+            progressContainer.className = 'toast-progress';
+            
+            const progressBar = document.createElement('div');
+            progressBar.className = 'toast-progress-bar';
+            
+            // Assemble elements
+            progressContainer.appendChild(progressBar);
+            toast.appendChild(toastContent);
+            toast.appendChild(closeButton);
+            toast.appendChild(progressContainer);
+            
+            // Add to container
+            toastContainer.appendChild(toast);
+            
+            // Set timeout to remove after 3 seconds
+            setTimeout(() => {
+                removeToast(toast);
+            }, 3000);
+        }
+        
+        function removeToast(toast) {
+            toast.style.animation = 'slide-out 0.3s forwards';
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.parentNode.removeChild(toast);
+                }
+            }, 300);
+        }
+
+        // Initialize tooltips and process messages
         document.addEventListener('DOMContentLoaded', function () {
+            // Process toast messages
+            const messageElements = document.querySelectorAll('.toast-messages .message');
+            if (messageElements.length > 0) {
+                messageElements.forEach(el => {
+                    const message = el.textContent;
+                    const type = el.getAttribute('data-type');
+                    showToast(message, type);
+                });
+            }
+            
             // Tooltips
             var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
             var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {

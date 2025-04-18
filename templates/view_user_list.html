@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block title %} Bộ sưu tập {{ user.username }} - Mẹt Phim{% endblock %}
+{% block title %} Danh sách phim của {{ user.username }} - Mẹt Phim{% endblock %}
 {% block content %}
 <!-- Add spacer to prevent content from overlapping with navbar -->
 <div class="navbar-spacer"></div>
@@ -18,16 +18,15 @@
                     {% endif %}
                 </div>
                 <div class="col-md-8">
-                    <h1 class="user-list-title mb-3">Bộ sưu tập của {{ user.username }}</h1>
-                    <p class="lead">Khám phá bộ sưu tập của {{ user.username }} tuyển chọn.</p>
+                    <h1 class="user-list-title mb-3">Danh sách phim của {{ user.username }}</h1>
+                    <p class="lead">Khám phá bộ sưu tập phim của {{ user.username }} tuyển chọn.</p>
                     <div class="mt-3">
-                        <a href="{% url 'view_user_list' %}" class="btn btn-outline-light me-2">
-                            <i class="bi bi-collection"></i> Xem tất cả phim thêm xem sau
+                        <a href="{% url 'view_user_list' %}" class="btn custom-btn collection-btn me-2">
+                            <i class="fas fa-bookmark me-2"></i> Xem sau
                         </a>
-                        <a href="{% url 'favorite_movies' %}" class="btn btn-outline-light me-2">
-                            <i class="bi bi-heart-fill"></i> Xem tất cả phim đã thích
+                        <a href="{% url 'favorite_movies' %}" class="btn custom-btn liked-btn me-2">
+                            <i class="fas fa-heart me-2"></i> Phim đã thích
                         </a>
-                        
                     </div>
                 </div>
             </div>
@@ -41,9 +40,9 @@
             <div class="card shadow-sm">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h2 class="card-title mb-0">Danh sách phim sưu tập</h2>
-                        <a href="{% url 'view_user_list' %}" class="btn btn-outline-primary">
-                            <i class="bi bi-collection"></i> Xem tất cả
+                        <h2 class="card-title mb-0">Danh sách phim xem sau</h2>
+                        <a href="{% url 'view_user_list' %}" class="btn custom-btn-outline collection-btn-outline">
+                            <i class="fas fa-list me-2"></i> Xem tất cả
                         </a>
                     </div>
                     {% if user_list.movies.all %}
@@ -57,11 +56,11 @@
                                     </a>
                                     <div class="d-flex justify-content-between align-items-center mt-2">
                                         <div class="movie-rating">
-                                            <i class="bi bi-star-fill text-warning"></i>
+                                            <i class="fas fa-star text-warning me-1"></i>
                                             {{ movie.average_rating|floatformat:1 }}
                                         </div>
-                                        <a href="{% url 'remove_from_list' movie.id %}" class="btn btn-danger btn-sm">
-                                            <i class="bi bi-trash"></i> Xoá
+                                        <a href="{% url 'remove_from_list' movie.id %}" class="btn action-btn delete-btn">
+                                            <i class="fas fa-trash-alt me-1"></i> Xóa
                                         </a>
                                     </div>
                                 </div>
@@ -82,8 +81,8 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h2 class="card-title mb-0">Phim đã thích</h2>
-                        <a href="{% url 'favorite_movies' %}" class="btn btn-outline-primary">
-                            <i class="bi bi-heart-fill"></i> Xem tất cả
+                        <a href="{% url 'favorite_movies' %}" class="btn custom-btn-outline liked-btn-outline">
+                            <i class="fas fa-heart me-2"></i> Xem tất cả
                         </a>
                     </div>
                     {% if liked_movies %}
@@ -97,11 +96,11 @@
                                     </a>
                                     <div class="d-flex justify-content-between align-items-center mt-2">
                                         <div class="movie-rating">
-                                            <i class="bi bi-star-fill text-warning"></i>
+                                            <i class="fas fa-star text-warning me-1"></i>
                                             {{ movie.average_rating|floatformat:1 }}
                                         </div>
-                                        <a href="{% url 'like_movie' movie.id %}" class="btn btn-danger btn-sm">
-                                            <i class="bi bi-heart-fill"></i> Bỏ thích
+                                        <a href="{% url 'like_movie' movie.id %}" class="btn action-btn unlike-btn">
+                                            <i class="fas fa-heart-broken me-1"></i> Bỏ thích
                                         </a>
                                     </div>
                                 </div>
@@ -115,8 +114,6 @@
             </div>
         </div>
     </div>
-
-    
 
 <style>
     /* Spacer to prevent content from overlapping with fixed navbar */
@@ -193,6 +190,107 @@
         border-bottom: 2px solid #007bff;
         padding-bottom: 10px;
         margin-bottom: 20px;
+    }
+    
+    /* Custom buttons styling */
+    .custom-btn {
+        padding: 8px 18px;
+        border-radius: 50px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        border: none;
+        box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+    }
+    
+    .custom-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+    }
+    
+    .custom-btn-outline {
+        padding: 8px 18px;
+        border-radius: 50px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        background: transparent;
+    }
+    
+    .custom-btn-outline:hover {
+        transform: translateY(-3px);
+    }
+    
+    .collection-btn {
+        background: linear-gradient(45deg, #3498db, #2980b9);
+        color: white;
+    }
+    
+    .collection-btn:hover {
+        background: linear-gradient(45deg, #2980b9, #3498db);
+        color: white;
+    }
+    
+    .collection-btn-outline {
+        border: 2px solid #3498db;
+        color: #3498db;
+    }
+    
+    .collection-btn-outline:hover {
+        background-color: rgba(52, 152, 219, 0.1);
+        color: #3498db;
+    }
+    
+    .liked-btn {
+        background: linear-gradient(45deg, #e74c3c, #c0392b);
+        color: white;
+    }
+    
+    .liked-btn:hover {
+        background: linear-gradient(45deg, #c0392b, #e74c3c);
+        color: white;
+    }
+    
+    .liked-btn-outline {
+        border: 2px solid #e74c3c;
+        color: #e74c3c;
+    }
+    
+    .liked-btn-outline:hover {
+        background-color: rgba(231, 76, 60, 0.1);
+        color: #e74c3c;
+    }
+    
+    .action-btn {
+        padding: 6px 12px;
+        border-radius: 50px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .action-btn:hover {
+        transform: translateY(-2px);
+    }
+    
+    .delete-btn {
+        background-color: #e74c3c;
+        color: white;
+        border: none;
+    }
+    
+    .delete-btn:hover {
+        background-color: #c0392b;
+        color: white;
+    }
+    
+    .unlike-btn {
+        background-color: #7f8c8d;
+        color: white;
+        border: none;
+    }
+    
+    .unlike-btn:hover {
+        background-color: #2c3e50;
+        color: white;
     }
     
     /* Actor styling */

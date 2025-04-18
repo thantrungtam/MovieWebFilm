@@ -25,7 +25,7 @@ class Movie(models.Model):
     trailer_file = models.FileField(upload_to='trailers/', null=True, blank=True)
     trailer_link = models.URLField(null=True, blank=True)
     youtube_embed_url = models.URLField(blank=True, null=True)
-
+    is_premium = models.BooleanField(default=False)  # Indicates if the movie is premium or free
     
 
     def get_like_count(self):

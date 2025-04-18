@@ -7,6 +7,11 @@
         <div class="carousel-item {% if forloop.first %}active{% endif %}" data-bs-interval="5000">
             <div class="carousel-image-wrapper">
                 <img src="{{ movie.thumbnail.url }}" class="carousel-image" alt="{{ movie.title }} ">
+                {% if movie.is_premium %}
+                <span class="movie-tag premium-tag">Premium</span>
+                {% else %}
+                <span class="movie-tag free-tag">Free</span>
+                {% endif %}
             </div>
             <div class="carousel-caption d-none d-md-block">
                 <h2>{{ movie.title }}</h2>
@@ -38,6 +43,11 @@
         <div class="col">
             <div class="movie-card">
                 <img src="{{ movie.thumbnail.url }}" alt="{{ movie.title }}" class="img-fluid">
+                {% if movie.is_premium %}
+                <span class="movie-tag premium-tag">Premium</span>
+                {% else %}
+                <span class="movie-tag free-tag">Free</span>
+                {% endif %}
                 <div class="movie-info">
                     <h5 class="card-title mb-2">{{ movie.title }}</h5>
                     <p class="card-text small mb-2">{{ movie.description|truncatewords:10 }}</p>
@@ -61,6 +71,11 @@
         <div class="col">
             <div class="movie-card">
                 <img src="{{ movie.thumbnail.url }}" alt="{{ movie.title }}" class="img-fluid">
+                {% if movie.is_premium %}
+                <span class="movie-tag premium-tag">Premium</span>
+                {% else %}
+                <span class="movie-tag free-tag">Free</span>
+                {% endif %}
                 <div class="movie-info">
                     <h5 class="card-title mb-2">{{ movie.title }}</h5>
                     <p class="card-text small mb-2">{{ movie.description|truncatewords:10 }}</p>
@@ -84,6 +99,11 @@
         <div class="col">
             <div class="movie-card">
                 <img src="{{ movie.thumbnail.url }}" alt="{{ movie.title }}" class="img-fluid">
+                {% if movie.is_premium %}
+                <span class="movie-tag premium-tag">Premium</span>
+                {% else %}
+                <span class="movie-tag free-tag">Free</span>
+                {% endif %}
                 <div class="movie-info">
                     <h5 class="card-title mb-2">{{ movie.title }}</h5>
                     <p class="card-text small mb-2">{{ movie.description|truncatewords:10 }}</p>

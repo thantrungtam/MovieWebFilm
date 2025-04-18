@@ -1,0 +1,313 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Gói Đăng Ký Của Tôi{% endblock %}
+
+{% block additional_styles %}
+<style>
+    .subscription-history-container {
+        padding-top: 100px;
+        padding-bottom: 50px;
+    }
+    
+    .section-title {
+        margin-bottom: 25px;
+        position: relative;
+        padding-bottom: 15px;
+    }
+    
+    .section-title:after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        height: 3px;
+        width: 60px;
+        background: var(--primary-color);
+    }
+    
+    .card {
+        border: none;
+        margin-bottom: 30px;
+        transition: all 0.3s ease;
+    }
+    
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    }
+    
+    .active-subscription-card .card-header {
+        background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+        color: white;
+        border-bottom: none;
+        padding: 15px 20px;
+    }
+    
+    .subscription-badge {
+        font-size: 0.9rem;
+        padding: 5px 12px;
+        border-radius: 20px;
+    }
+    
+    .subscription-details {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .subscription-detail {
+        display: flex;
+        align-items: center;
+    }
+    
+    .subscription-detail i {
+        width: 30px;
+        color: var(--primary-color);
+    }
+    
+    .table-container {
+        border-radius: var(--border-radius);
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    
+    .custom-table {
+        margin-bottom: 0;
+    }
+    
+    .custom-table thead th {
+        background-color: var(--dark-bg);
+        color: white;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.9rem;
+        padding: 15px;
+        border: none;
+    }
+    
+    .custom-table tbody tr {
+        transition: all 0.3s ease;
+    }
+    
+    .custom-table tbody tr:hover {
+        background-color: rgba(255,255,255,0.1);
+    }
+    
+    .custom-table td {
+        padding: 15px;
+        vertical-align: middle;
+        border-color: rgba(255,255,255,0.05);
+        color: var(--text-light);
+    }
+    
+    .status-badge {
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.8rem;
+    }
+    
+    .renew-btn {
+        background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+        border: none;
+        font-weight: 600;
+        border-radius: 50px;
+        padding: 10px 25px;
+        transition: all 0.3s ease;
+    }
+    
+    .renew-btn:hover {
+        background: linear-gradient(45deg, var(--secondary-color), var(--primary-color));
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+    
+    .empty-state {
+        background-color: rgba(255,255,255,0.05);
+        border-radius: var(--border-radius);
+        padding: 40px 20px;
+        text-align: center;
+    }
+    
+    .empty-state i {
+        font-size: 50px;
+        color: var(--text-muted);
+        margin-bottom: 20px;
+    }
+    
+    .date-column {
+        color: var(--text-light);
+        font-weight: normal;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container subscription-history-container">
+    <div class="row">
+        <div class="col-12 mb-4">
+            <h1 class="display-5 fw-bold">Gói Đăng Ký Của Tôi</h1>
+            <p class="lead">Xem lịch sử đăng ký và chi tiết thanh toán của bạn</p>
+        </div>
+    </div>
+    
+    <!-- Current Subscription -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <h3 class="section-title">Gói Đăng Ký Hiện Tại</h3>
+            
+            {% for subscription in subscriptions %}
+                {% if subscription.is_valid %}
+                <div class="card active-subscription-card shadow">
+                    <div class="card-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h4 class="mb-0">{{ subscription.plan.name }}</h4>
+                            <span class="subscription-badge bg-warning text-dark">
+                                <i class="fas fa-crown me-1"></i> Premium
+                            </span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="subscription-details">
+                                    <div class="subscription-detail">
+                                        <i class="fas fa-check-circle"></i>
+                                        <span><strong>Trạng thái:</strong> <span class="badge bg-success">Đang hoạt động</span></span>
+                                    </div>
+                                    <div class="subscription-detail">
+                                        <i class="fas fa-tag"></i>
+                                        <span><strong>Giá:</strong> {{ subscription.plan.price|floatformat:0 }} VND</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="subscription-details">
+                                    <div class="subscription-detail">
+                                        <i class="fas fa-calendar-plus"></i>
+                                        <span><strong>Ngày bắt đầu:</strong> {{ subscription.start_date|date:"d/m/Y" }}</span>
+                                    </div>
+                                    <div class="subscription-detail">
+                                        <i class="fas fa-calendar-times"></i>
+                                        <span><strong>Ngày kết thúc:</strong> {{ subscription.end_date|date:"d/m/Y" }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 d-flex align-items-center justify-content-end">
+                                <a href="{% url 'payment:subscription_plans' %}" class="btn btn-primary renew-btn">
+                                    <i class="fas fa-sync-alt me-2"></i> Gia Hạn Gói
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            {% empty %}
+                <div class="empty-state">
+                    <i class="fas fa-ticket-alt"></i>
+                    <h4>Bạn không có gói đăng ký đang hoạt động nào</h4>
+                    <p class="text-muted mb-4">Hãy đăng ký gói Premium để trải nghiệm các tính năng cao cấp.</p>
+                    <a href="{% url 'payment:subscription_plans' %}" class="btn btn-primary renew-btn">
+                        <i class="fas fa-shopping-cart me-2"></i> Đăng Ký Ngay
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <!-- Subscription History -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <h3 class="section-title">Lịch Sử Đăng Ký</h3>
+            
+            {% if subscriptions %}
+            <div class="table-container">
+                <table class="table custom-table table-hover table-responsive">
+                    <thead>
+                        <tr>
+                            <th>Gói</th>
+                            <th>Ngày bắt đầu</th>
+                            <th>Ngày kết thúc</th>
+                            <th>Trạng thái</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for subscription in subscriptions %}
+                        <tr>
+                            <td>
+                                <strong>{{ subscription.plan.name }}</strong>
+                            </td>
+                            <td class="date-column">{{ subscription.start_date|date:"d/m/Y" }}</td>
+                            <td class="date-column">{{ subscription.end_date|date:"d/m/Y" }}</td>
+                            <td>
+                                {% if subscription.is_valid %}
+                                    <span class="status-badge bg-success">Đang hoạt động</span>
+                                {% else %}
+                                    <span class="status-badge bg-secondary">Hết hạn</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-history"></i>
+                <h4>Không tìm thấy lịch sử đăng ký nào</h4>
+                <p class="text-muted">Bạn chưa đăng ký gói Premium nào trước đây.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Payment History -->
+    <div class="row">
+        <div class="col-12">
+            <h3 class="section-title">Lịch Sử Thanh Toán</h3>
+            
+            {% if payments %}
+            <div class="table-container">
+                <table class="table custom-table table-hover table-responsive">
+                    <thead>
+                        <tr>
+                            <th>Mã Đơn Hàng</th>
+                            <th>Ngày</th>
+                            <th>Số Tiền</th>
+                            <th>Trạng thái</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for payment in payments %}
+                        <tr>
+                            <td>
+                                <code>{{ payment.order_id }}</code>
+                            </td>
+                            <td class="date-column">{{ payment.created_at|date:"d/m/Y H:i" }}</td>
+                            <td>{{ payment.amount|floatformat:0 }} VND</td>
+                            <td>
+                                {% if payment.payment_status == 'completed' %}
+                                    <span class="status-badge bg-success">Hoàn thành</span>
+                                {% elif payment.payment_status == 'pending' %}
+                                    <span class="status-badge bg-warning text-dark">Đang xử lý</span>
+                                {% else %}
+                                    <span class="status-badge bg-danger">Thất bại</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-file-invoice-dollar"></i>
+                <h4>Không tìm thấy lịch sử thanh toán nào</h4>
+                <p class="text-muted">Bạn chưa thực hiện giao dịch nào trước đây.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -4,10 +4,49 @@
 <div class="container py-5" style="margin-top: 80px;">
     <div class="search-header mb-4">
         <h2 class="search-title">Kết quả tìm kiếm cho: <span class="text-primary">"{{ query }}"</span></h2>
-        <p class="search-count text-muted">{{ movies|length }} kết quả</p>
+        <p class="search-count text-muted">{{ movies|length }} phim, {{ actors|length }} diễn viên</p>
     </div>
 
+    <!-- Diễn viên -->
+    {% if actors %}
+    <div class="section-title mb-3">
+        <h3><i class="fas fa-user-alt me-2"></i>Diễn viên</h3>
+    </div>
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4 mb-5">
+        {% for actor in actors %}
+        <div class="col">
+            <div class="actor-card">
+                <div class="actor-img-container">
+                    {% if actor.image %}
+                    <img src="{{ actor.image.url }}" alt="{{ actor.name }}" class="img-fluid actor-img">
+                    {% else %}
+                    <div class="actor-placeholder">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="actor-info">
+                    <h5 class="actor-name mb-2">{{ actor.name }}</h5>
+                    <div class="actor-tags mb-2">
+                        <span class="actor-tag age-tag">{{ actor.age }} tuổi</span>
+                        <span class="actor-tag gender-tag">{{ actor.get_gender_display }}</span>
+                        <span class="actor-tag count-tag">{{ actor.movie_count }} phim</span>
+                    </div>
+                    <a href="{% url 'actor:actor_detail' actor.id %}" class="btn action-btn actor-detail-btn">
+                        <i class="fas fa-info-circle me-1"></i>Chi tiết
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Phim -->
     {% if movies %}
+        <div class="section-title mb-3">
+            <h3><i class="fas fa-film me-2"></i>Phim</h3>
+        </div>
         <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
             {% for movie in movies %}
                 <div class="col">
@@ -17,8 +56,8 @@
                             <h5 class="card-title mb-2">{{ movie.title }}</h5>
                             <p class="card-text small mb-2">{{ movie.description|truncatewords:10 }}</p>
                             <div class="d-flex justify-content-between align-items-center movie-stats mb-3">
-                                <span><i class="bi bi-star-fill me-1"></i> {{ movie.average_rating|floatformat:1 }}</span>
-                                <span><i class="bi bi-hand-thumbs-up-fill me-1"></i> {{ movie.like_count }}</span>
+                                <span><i class="fas fa-star text-warning me-1"></i> {{ movie.average_rating|floatformat:1 }}</span>
+                                <span><i class="fas fa-thumbs-up text-primary me-1"></i> {{ movie.like_count }}</span>
                             </div>
                             <a href="{% url 'movie_detail' movie.id %}" class="btn btn-primary watch-btn w-100">
                                 <i class="fas fa-play me-2"></i>Xem ngay
@@ -28,9 +67,11 @@
                 </div>
             {% endfor %}
         </div>
-    {% else %}
+    {% endif %}
+
+    {% if not movies and not actors %}
         <div class="no-results text-center py-5">
-            <i class="bi bi-search display-1 text-muted mb-3"></i>
+            <i class="fas fa-search display-1 text-muted mb-3"></i>
             <h3 class="text-muted">Không tìm thấy kết quả phù hợp</h3>
             <p class="text-muted">Hãy thử tìm kiếm với từ khóa khác</p>
         </div>
@@ -65,6 +106,174 @@
 
     .no-results i {
         opacity: 0.5;
+    }
+    
+    .section-title {
+        position: relative;
+        padding-bottom: 0.5rem;
+        margin-bottom: 1.5rem;
+        color: var(--text-light);
+    }
+    
+    .section-title:after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 60px;
+        height: 3px;
+        background: var(--primary-color);
+    }
+    
+    /* Actor card styling */
+    .actor-card {
+        background-color: var(--card-bg);
+        border-radius: var(--border-radius);
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        position: relative;
+        height: 100%;
+    }
+    
+    .actor-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+    }
+    
+    .actor-img-container {
+        height: 0;
+        padding-top: 100%; /* Square aspect ratio */
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .actor-img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .actor-placeholder {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: rgba(0, 0, 0, 0.3);
+        color: var(--text-light);
+        font-size: 2rem;
+    }
+    
+    .actor-info {
+        padding: 1rem;
+        background: linear-gradient(to top, rgba(0, 0, 0, 0.8), var(--card-bg));
+        color: var(--text-light);
+    }
+    
+    .actor-name {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    
+    .actor-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .actor-tag {
+        padding: 0.2rem 0.5rem;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    
+    .age-tag {
+        background-color: var(--primary-color);
+        color: white;
+    }
+    
+    .gender-tag {
+        background-color: var(--secondary-color);
+        color: white;
+    }
+    
+    .count-tag {
+        background-color: #28a745;
+        color: white;
+    }
+    
+    .actor-btn {
+        width: 100%;
+        margin-top: 0.5rem;
+        border-radius: 50px;
+        font-size: 0.9rem;
+    }
+    
+    .actor-detail-btn {
+        background: linear-gradient(45deg, #3498db, #2980b9);
+        color: white;
+        border: none;
+        width: 100%;
+    }
+    
+    .actor-detail-btn:hover {
+        background: linear-gradient(45deg, #2980b9, #3498db);
+        color: white;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Movie card styling */
+    .movie-card {
+        position: relative;
+        border-radius: var(--border-radius);
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        height: 100%;
+    }
+    
+    .movie-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+    }
+    
+    .movie-card img {
+        width: 100%;
+        height: 300px;
+        object-fit: cover;
+    }
+    
+    .movie-info {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 15px;
+        background: linear-gradient(to top, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.5), transparent);
+        color: white;
+    }
+    
+    .watch-btn {
+        border-radius: 50px;
+        font-weight: 600;
+        background: linear-gradient(45deg, var(--primary-color), var(--primary-dark));
+        border: none;
+        transition: all 0.3s ease;
+    }
+    
+    .watch-btn:hover {
+        background: linear-gradient(45deg, var(--primary-dark), var(--primary-color));
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
     }
 </style>
 {% endblock %}

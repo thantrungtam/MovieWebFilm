@@ -51,13 +51,15 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.humanize',
     'movies',
-    'core',
     'user_interactions',
     'accounts',
     'actor',
+    'payment',
     'widget_tweaks',
 ]
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -84,6 +86,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'django.template.context_processors.media',
+                'payment.context_processors.user_subscription_status',
             ],
         },
     },
@@ -141,7 +144,7 @@ USE_I18N = True
 
 USE_L10N = True
 
-USE_TZ = True
+USE_TZ = False
 
 
 # Static files (CSS, JavaScript, Images)
@@ -156,3 +159,18 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 LOGIN_REDIRECT_URL = 'home' 
+
+# STATIC_URL = '/static/'
+
+# Static files (CSS, JavaScript, Images)
+# https://docs.djangoproject.com/en/1.10/howto/static-files/
+STATICFILES_DIRS = (
+    os.path.join(BASE_DIR, 'static/'),
+)
+
+# VNPAY CONFIG
+VNPAY_RETURN_URL = 'http://localhost:8000/payment/vnpay-return/'  # get from config
+VNPAY_PAYMENT_URL = 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html'  # get from config
+VNPAY_API_URL = 'https://sandbox.vnpayment.vn/merchant_webapi/api/transaction'
+VNPAY_TMN_CODE = 'ZR78PY19'  # Website ID in VNPAY System, get from config
+VNPAY_HASH_SECRET_KEY = 'PXM5EVOBYQRF601LXCYLWYYPMRWZGQ7H'  # Secret key for create checksum,get from config

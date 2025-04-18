@@ -11,16 +11,16 @@ class ActorInline(admin.TabularInline):
 
 @admin.register(Movie)
 class MovieAdmin(admin.ModelAdmin):
-    list_display = ('title', 'release_date')
+    list_display = ('title', 'release_date', 'is_premium')
     search_fields = ('title', 'description')
-    list_filter = ('genres', 'release_date')
+    list_filter = ('genres', 'release_date', 'is_premium')
     filter_horizontal = ('genres',)  # Keep genres as horizontal filter
     inlines = [ActorInline]
 
     # fields = ('title', 'description', 'thumbnail', 'video_file', 'release_date', 'genres', 'trailer_file', 'trailer_link')  # thêm dòng này
     fieldsets = (
         (None, {
-            'fields': ('title', 'description', 'genres', 'release_date', 'thumbnail')
+            'fields': ('title', 'description', 'genres', 'release_date', 'thumbnail', 'is_premium')
         }),
         ('Nguồn phim', {
             'fields': ('video_file', 'streaming_link'),

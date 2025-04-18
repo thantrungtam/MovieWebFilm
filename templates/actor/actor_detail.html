@@ -34,9 +34,17 @@
                     <span class="actor-badge badge-birthdate">
                         <i class="fas fa-birthday-cake mr-1"></i> {{ actor.birthdate|date:"d/m/Y" }}
                     </span>
+                    <!-- <span class="actor-badge badge-age">
+                        <i class="fas fa-user-clock mr-1"></i> {{ actor.age }} tuổi
+                    </span> -->
                     {% endif %}
                 </div>
                 <div class="actor-actions mt-3">
+                    {% if user.is_authenticated %}
+                    <a href="{% url 'add_actor_to_list' actor.id %}" class="btn btn-primary favorite-btn">
+                        <i class="fas fa-plus"></i> Thêm vào yêu thích
+                    </a>
+                    {% endif %}
                     <button class="btn btn-secondary" id="share-button"><i class="fas fa-share-alt"></i> Chia sẻ</button>
                     
                     <!-- Share modal -->
@@ -492,66 +500,81 @@
     #copy-button:hover {
         background-color: #4a545e;
     }
+
+    .no-movies p {
+        text-align: center;
+        color: #a0a0a0;
+        font-size: 1.2rem;
+    }
+    
+    /* Favorite Button */
+    .favorite-btn {
+        background: linear-gradient(135deg, var(--primary-color), #ff5a7f);
+        border: none;
+        margin-right: 10px;
+        transition: all 0.3s ease;
+    }
+    
+    .favorite-btn:hover {
+        background: linear-gradient(135deg, #ff5a7f, var(--primary-color));
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(255, 55, 95, 0.3);
+    }
+    
+    .favorite-btn.active {
+        background: linear-gradient(135deg, #e0294e, #d01b3c);
+    }
+    
+    .favorite-btn.active i {
+        animation: pulse 1s infinite;
+    }
+    
+    @keyframes pulse {
+        0% {
+            transform: scale(1);
+        }
+        50% {
+            transform: scale(1.2);
+        }
+        100% {
+            transform: scale(1);
+        }
+    }
+    
+    /* Badge Styles */
+    .badge-age {
+        background-color: #9b59b6;
+    }
 </style>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Share functionality
         const shareButton = document.getElementById('share-button');
-        let shareModal;
-        
-        // Initialize Bootstrap modal if it exists
-        if (document.getElementById('shareModal')) {
-            try {
-                shareModal = new bootstrap.Modal(document.getElementById('shareModal'));
-            } catch (error) {
-                console.error('Error initializing modal:', error);
-                // Fallback for modal initialization
-                if (typeof bootstrap !== 'undefined') {
-                    shareModal = new bootstrap.Modal(document.getElementById('shareModal'));
-                } else {
-                    console.warn('Bootstrap not available');
-                }
-            }
-        }
-        
+        const shareModal = new bootstrap.Modal(document.getElementById('shareModal'));
+        const shareUrl = document.getElementById('share-url');
         const copyButton = document.getElementById('copy-button');
-        const shareUrlInput = document.getElementById('share-url');
-        const actorName = "{{ actor.name }}";
+        const shareButtons = document.querySelectorAll('.share-btn');
         
-        // Set the share URL to the current page
-        if (shareUrlInput) {
-            shareUrlInput.value = window.location.href;
-        }
+        shareButton.addEventListener('click', function() {
+            shareUrl.value = window.location.href;
+            shareModal.show();
+        });
         
-        // Share button functionality
-        if (shareButton && shareModal) {
-            shareButton.addEventListener('click', function() {
-                shareModal.show();
-            });
-        }
+        copyButton.addEventListener('click', function() {
+            shareUrl.select();
+            document.execCommand('copy');
+            this.innerHTML = '<i class="fas fa-check"></i> Đã sao chép';
+            setTimeout(() => {
+                this.innerHTML = '<i class="fas fa-copy"></i> Sao chép';
+            }, 2000);
+        });
         
-        // Copy link button functionality
-        if (copyButton && shareUrlInput) {
-            copyButton.addEventListener('click', function() {
-                shareUrlInput.select();
-                document.execCommand('copy');
-                
-                // Change button text temporarily
-                const originalText = copyButton.innerHTML;
-                copyButton.innerHTML = '<i class="fas fa-check"></i> Đã sao chép';
-                    
-                    setTimeout(function() {
-                    copyButton.innerHTML = originalText;
-                }, 2000);
-            });
-        }
-        
-        // Social media share buttons
-        document.querySelectorAll('.share-btn').forEach(function(button) {
+        shareButtons.forEach(button => {
             button.addEventListener('click', function() {
                 const platform = this.getAttribute('data-platform');
                 const url = encodeURIComponent(window.location.href);
-                const text = encodeURIComponent(`Thông tin về diễn viên ${actorName} - Mẹt Phim`);
+                const title = encodeURIComponent(document.title);
                 let shareUrl;
                 
                 switch(platform) {
@@ -559,64 +582,84 @@
                         shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${url}`;
                         break;
                     case 'twitter':
-                        shareUrl = `https://twitter.com/intent/tweet?url=${url}&text=${text}`;
+                        shareUrl = `https://twitter.com/intent/tweet?url=${url}&text=${title}`;
                         break;
                     case 'whatsapp':
-                        shareUrl = `https://api.whatsapp.com/send?text=${text} ${url}`;
+                        shareUrl = `https://wa.me/?text=${title}%20${url}`;
                         break;
                     case 'telegram':
-                        shareUrl = `https://t.me/share/url?url=${url}&text=${text}`;
+                        shareUrl = `https://t.me/share/url?url=${url}&text=${title}`;
                         break;
                 }
                 
-                // Open share window
-                window.open(shareUrl, '_blank', 'width=600,height=400');
-                
-                // Show success notification
-                showNotification(`Đã chia sẻ qua ${platform}`, 'success');
-                
-                // Close modal after sharing
-                if (shareModal) {
-                    setTimeout(() => {
-                        shareModal.hide();
-                    }, 500);
-                }
+                window.open(shareUrl, '_blank');
             });
         });
         
-        // Utility function to show notifications
-        function showNotification(message, type) {
-                    var toast = document.createElement('div');
-            toast.className = 'toast-notification' + (type === 'error' ? ' toast-remove' : '');
-            toast.innerHTML = '<i class="fas fa-' + (type === 'error' ? 'times' : 'check') + '-circle"></i> ' + message;
-                    document.body.appendChild(toast);
-                    
-                    setTimeout(function() {
-                        toast.classList.add('show');
-                    }, 100);
-                    
-                    setTimeout(function() {
-                        toast.classList.remove('show');
-                        setTimeout(function() {
-                            document.body.removeChild(toast);
-                        }, 500);
-                    }, 3000);
+        // Favorite button functionality
+        const favoriteBtn = document.querySelector('.favorite-btn');
+        if (favoriteBtn) {
+            // Check if actor is already in favorites
+            checkActorInFavorites();
+            
+            favoriteBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const url = this.getAttribute('href');
+                
+                fetch(url, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        showToast(data.message, 'success');
+                        updateFavoriteButton(data.is_in_list);
+                    } else if (data.status === 'info') {
+                        showToast(data.message, 'info');
+                        updateFavoriteButton(true);
+                    } else if (data.status === 'error') {
+                        showToast(data.message, 'error');
+                        updateFavoriteButton(false);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showToast('Có lỗi xảy ra khi thao tác với danh sách yêu thích', 'error');
+                });
+            });
         }
         
-        // Function to get CSRF token
-        function getCookie(name) {
-            let cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                const cookies = document.cookie.split(';');
-                for (let i = 0; i < cookies.length; i++) {
-                    const cookie = cookies[i].trim();
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
+        function checkActorInFavorites() {
+            const actorId = "{{ actor.id }}";
+            fetch(`/user/check_actor_in_list/${actorId}/`, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
                 }
+            })
+            .then(response => response.json())
+            .then(data => {
+                updateFavoriteButton(data.is_in_list);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+        
+        function updateFavoriteButton(isInList) {
+            const favoriteBtn = document.querySelector('.favorite-btn');
+            if (!favoriteBtn) return;
+            
+            if (isInList) {
+                favoriteBtn.classList.add('active');
+                favoriteBtn.innerHTML = '<i class="fas fa-heart"></i> Đã thêm vào yêu thích';
+                favoriteBtn.href = `/user/remove_actor_from_list/{{ actor.id }}/`;
+            } else {
+                favoriteBtn.classList.remove('active');
+                favoriteBtn.innerHTML = '<i class="fas fa-plus"></i> Thêm vào yêu thích';
+                favoriteBtn.href = `/user/add_actor_to_list/{{ actor.id }}/`;
             }
-            return cookieValue;
         }
     });
 </script>

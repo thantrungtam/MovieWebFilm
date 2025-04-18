@@ -21,7 +21,7 @@
     <div class="row">
         {% for actor in actors %}
         <div class="col-md-2 mb-4">
-            <a href="{% url 'actor_detail' actor.pk %}" class="text-decoration-none">
+            <a href="{% url 'actor:actor_detail' actor.pk %}" class="text-decoration-none">
                 <div class="card actor-card h-100">
                     {% if actor.image %}
                     <img src="{{ actor.image.url }}" class="card-img-top" alt="{{ actor.name }}">

@@ -2,7 +2,7 @@ from django.views.generic import ListView, DetailView
 from django.http import JsonResponse
 from .models import Movie, Genre
 from user_interactions.models import UserList, Rating, Like, Comment
-from django.db.models import F, Count
+from django.db.models import F, Count, Avg
 from django.utils import timezone
 from datetime import timedelta
 from django.shortcuts import render
@@ -11,6 +11,7 @@ from django.apps import AppConfig
 from django.shortcuts import render, get_object_or_404
 from .models import Movie
 from django.db.models import Q
+from actor.models import Actor
 
 
 class HomeView(ListView):
@@ -166,15 +167,18 @@ class MovieTrailerView(DetailView):
 def search_movies(request):
     query = request.GET.get('q')
     if query:
-        # Tìm kiếm không dùng distinct() để giữ các kết quả trùng lặp
+        # Tìm kiếm phim
         title_matches = Movie.objects.filter(title__icontains=query)
         genre_matches = Movie.objects.filter(genres__name__icontains=query)
         actor_matches = Movie.objects.filter(actors__name__icontains=query)
         
-        # Kết hợp các kết quả từ 3 truy vấn
+        # Tìm kiếm diễn viên
+        actors = Actor.objects.filter(name__icontains=query) | Actor.objects.filter(alternate_name__icontains=query)
+        
+        # Kết hợp các kết quả phim
         movies = list(title_matches) + list(genre_matches) + list(actor_matches)
         
-        # Dict để theo dõi xem đã hiển thị phim và số lần xuất hiện
+        # Tính toán match_count để sắp xếp kết quả phim
         movie_counts = {}
         unique_movies = []
         
@@ -182,19 +186,32 @@ def search_movies(request):
             if movie.id not in movie_counts:
                 movie_counts[movie.id] = 1
                 movie.match_count = 1
+                # Thêm các thông tin cần thiết cho phim
+                movie.like_count = movie.get_like_count()
+                movie.average_rating = movie.get_average_rating()
                 unique_movies.append(movie)
             else:
                 movie_counts[movie.id] += 1
-                # Cập nhật match_count cho phim đã có trong unique_movies
+                # Cập nhật match_count cho phim đã có
                 for unique_movie in unique_movies:
                     if unique_movie.id == movie.id:
                         unique_movie.match_count = movie_counts[movie.id]
                         break
         
-        # Sắp xếp phim theo số lần xuất hiện (giảm dần) và sau đó theo lượt xem (giảm dần)
+        # Sắp xếp phim theo số lần xuất hiện và lượt xem
         unique_movies.sort(key=lambda x: (-x.match_count, -x.views))
+        
+        # Thêm thông tin tuổi và số phim cho diễn viên
+        for actor in actors:
+            actor.age = actor.get_age()
+            actor.movie_count = actor.get_movie_count()
         
     else:
         unique_movies = []
+        actors = []
         
-    return render(request, 'search_results.html', {'movies': unique_movies, 'query': query})
+    return render(request, 'search_results.html', {
+        'movies': unique_movies, 
+        'actors': actors, 
+        'query': query
+    })

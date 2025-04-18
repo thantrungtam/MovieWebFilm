@@ -12,6 +12,11 @@
                     <div class="poster-container">
                         <img src="{{ movie.thumbnail.url }}" alt="{{ movie.title }}"
                             class="img-fluid rounded movie-poster">
+                        {% if movie.is_premium %}
+                        <span class="movie-tag premium-tag detail-premium-tag">Premium</span>
+                        {% else %}
+                        <span class="movie-tag free-tag detail-free-tag">Free</span>
+                        {% endif %}
                         <div class="poster-overlay">
                             <a href="{% url 'watch_movie' movie.id %}" class="play-button">
                                 <i class="bi bi-play-fill"></i>
@@ -121,18 +126,6 @@
                             {% endif %}
                         </div>
                     </div>
-
-                    {% if messages %}
-                    <div class="alerts mt-3">
-                        {% for message in messages %}
-                        <div
-                            class="alert {% if message.tags %}alert-{{ message.tags }}{% else %}alert-info{% endif %} alert-dismissible fade show">
-                            {{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert"
-                                aria-label="Close"></button>
-                        </div>
-                        {% endfor %}
-                    </div>
-                    {% endif %}
                 </div>
             </div>
         </div>
@@ -294,7 +287,7 @@
                     <div class="actors-grid">
                         {% for actor in movie.actors.all %}
                         <div class="actor-item">
-                            <a href="{% url 'actor_detail' actor.id %}" class="actor-link">
+                            <a href="{% url 'actor:actor_detail' actor.id %}" class="actor-link">
                                 <div class="actor-photo">
                                     {% if actor.image %}
                                     <img src="{{ actor.image.url }}" alt="{{ actor.name }}">
