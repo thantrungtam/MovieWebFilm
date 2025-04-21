@@ -25,15 +25,64 @@
         height: 100%;
         transition: transform 0.3s ease, box-shadow 0.3s ease;
         border: none;
-        border-radius: 10px;
+        border-radius: 14px;
         overflow: hidden;
+        box-shadow: 0 4px 18px rgba(255, 71, 87, 0.08), 0 1.5px 8px 0 rgba(255, 215, 0, 0.12);
+        position: relative;
     }
-    
-    .plan-card:hover {
-        transform: translateY(-10px);
-        box-shadow: 0 15px 30px rgba(255, 71, 87, 0.3);
+    .plan-card.premium {
+        border: 2px solid gold;
+        box-shadow: 0 0 24px 4px gold, 0 4px 18px rgba(255, 71, 87, 0.12);
+        background: linear-gradient(120deg, #fffbe6 80%, #fffde4 100%);
     }
-    
+    .plan-card .premium-crown {
+        position: absolute;
+        top: -18px;
+        right: -18px;
+        background: gold;
+        color: #fff;
+        padding: 10px 14px 6px 14px;
+        border-radius: 50%;
+        font-size: 2.2rem;
+        box-shadow: 0 2px 8px rgba(255, 215, 0, 0.25);
+        z-index: 2;
+    }
+    .plan-card .badge-popular {
+        position: absolute;
+        left: 16px;
+        top: 16px;
+        background: linear-gradient(45deg, #ffb700, #ff4757);
+        color: #fff;
+        font-weight: 700;
+        border-radius: 12px;
+        padding: 6px 18px;
+        font-size: 1rem;
+        box-shadow: 0 2px 8px rgba(255, 71, 87, 0.12);
+        z-index: 2;
+    }
+    .plan-price {
+        font-size: 2.7rem;
+        font-weight: 800;
+        color: var(--primary-color);
+        margin-top: 10px;
+        letter-spacing: 1px;
+        text-shadow: 0 2px 8px rgba(255, 71, 87, 0.10);
+    }
+    .btn-primary {
+        background: linear-gradient(90deg, #ffb700 0%, #ff4757 100%);
+        border: none;
+        font-weight: 700;
+        transition: all 0.3s cubic-bezier(.25,.8,.25,1);
+        border-radius: 50px;
+        padding: 16px 20px;
+        font-size: 1.2rem;
+        box-shadow: 0 4px 18px rgba(255, 71, 87, 0.10);
+    }
+    .btn-primary:hover {
+        background: linear-gradient(90deg, #ff4757 0%, #ffb700 100%);
+        transform: translateY(-3px) scale(1.05);
+        box-shadow: 0 10px 20px rgba(255, 71, 87, 0.18);
+    }
     .card-header.bg-primary {
         background: linear-gradient(45deg, var(--primary-color), var(--secondary-color)) !important;
         border: none;
@@ -47,51 +96,6 @@
     
     .text-primary {
         color: var(--primary-color) !important;
-    }
-    
-    .btn-primary {
-        background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
-        border: none;
-        font-weight: 600;
-        transition: all 0.3s ease;
-        border-radius: 50px;
-        padding: 12px 20px;
-    }
-    
-    .btn-primary:hover {
-        background: linear-gradient(45deg, var(--secondary-color), var(--primary-color));
-        transform: translateY(-3px);
-        box-shadow: 0 10px 20px rgba(255, 71, 87, 0.4);
-    }
-    
-    .plan-header {
-        background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
-        color: white;
-        padding: 20px;
-        border-top-left-radius: var(--border-radius);
-        border-top-right-radius: var(--border-radius);
-    }
-    
-    .plan-price {
-        font-size: 2.5rem;
-        font-weight: 700;
-        color: var(--primary-color);
-        margin-top: 10px;
-    }
-    
-    .plan-features li {
-        padding: 12px 0;
-        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-    }
-    
-    .plan-features li:last-child {
-        border-bottom: none;
-    }
-    
-    .list-group-item {
-        padding: 12px 15px;
-        border: none;
-        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
     }
     
     .fas.fa-check {
@@ -117,7 +121,7 @@
 
 {% block content %}
 <div class="container mt-5">
-    <h1 class="text-center mb-5">Nâng cấp tài khoản Premium</h1>
+    <h1 class="text-center mb-5 page-header" style="margin-top: 70px;">Nâng cấp tài khoản Premium</h1>
     
     {% if current_subscription %}
     <div class="alert alert-info mb-4">
@@ -131,7 +135,15 @@
     <div class="row">
         {% for plan in subscription_plans %}
         <div class="col-md-4 mb-4">
-            <div class="card h-100 shadow plan-card">
+            <div class="card h-100 shadow plan-card{% if forloop.last %} premium{% endif %}">
+                {% if forloop.last %}
+                    <span class="premium-crown"><i class="fas fa-crown"></i></span>
+                {% endif %}
+                {% if forloop.counter == 2 %}
+                    <span class="badge-popular">Phổ biến</span>
+                {% elif forloop.last %}
+                    <span class="badge-popular">VIP nhất</span>
+                {% endif %}
                 <div class="card-header bg-primary text-white">
                     <h3 class="card-title text-center mb-0">{{ plan.name }}</h3>
                 </div>

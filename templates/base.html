@@ -578,13 +578,13 @@
             width: 100%;
             display: flex;
             align-items: center;
-            max-width: 500px;
+            max-width: 350px;
             margin-left: 20px;
             margin-right: 20px;
         }
 
         .search-input {
-            width: 400px;
+            width: 260px;
             max-width: 100%;
             flex: 1;
             padding-right: 40px;
@@ -999,10 +999,10 @@
                     <div class="footer-links">
                         <h5>Thể loại</h5>
                         <ul>
-                            <li><a href="#">Hành động</a></li>
-                            <li><a href="#">Tình cảm</a></li>
-                            <li><a href="#">Khoa học viễn tưởng</a></li>
-                            <li><a href="#">Kinh dị</a></li>
+                            <li><a href="{% url 'movies_page' %}?genre=hanh-dong">Hành động</a></li>
+                            <li><a href="{% url 'movies_page' %}?genre=tinh-cam">Tình cảm</a></li>
+                            <li><a href="{% url 'movies_page' %}?genre=khoa-hoc-vien-tuong">Khoa học viễn tưởng</a></li>
+                            <li><a href="{% url 'movies_page' %}?genre=kinh-di">Kinh dị</a></li>
                         </ul>
                     </div>
                 </div>

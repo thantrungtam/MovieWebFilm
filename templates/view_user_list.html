@@ -41,14 +41,14 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h2 class="card-title mb-0">Danh sách phim xem sau</h2>
-                        <a href="{% url 'view_user_list' %}" class="btn custom-btn-outline collection-btn-outline">
-                            <i class="fas fa-list me-2"></i> Xem tất cả
-                        </a>
+                        <button id="toggle-watchlist" class="btn custom-btn-outline collection-btn-outline">
+                            <i class="fas fa-list me-2"></i> <span id="toggle-watchlist-label">Xem tất cả</span>
+                        </button>
                     </div>
                     {% if user_list.movies.all %}
-                        <div class="row">
-                            {% for movie in user_list.movies.all|slice:":4" %}
-                            <div class="col-md-3 mb-4">
+                        <div class="row" id="watchlist-cards">
+                            {% for movie in user_list.movies.all %}
+                            <div class="col-md-3 mb-4 watchlist-item" {% if forloop.counter > 4 %}style="display:none;"{% endif %}>
                                 <div class="movie-item">
                                     <a href="{% url 'movie_detail' movie.id %}" class="text-decoration-none">
                                         <img src="{{ movie.thumbnail.url }}" alt="{{ movie.title }}" class="img-fluid rounded mb-2 movie-thumbnail">
@@ -81,14 +81,14 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h2 class="card-title mb-0">Phim đã thích</h2>
-                        <a href="{% url 'favorite_movies' %}" class="btn custom-btn-outline liked-btn-outline">
-                            <i class="fas fa-heart me-2"></i> Xem tất cả
-                        </a>
+                        <button id="toggle-liked-movies" class="btn custom-btn-outline liked-btn-outline">
+                            <i class="fas fa-heart me-2"></i> <span id="toggle-liked-movies-label">Xem tất cả</span>
+                        </button>
                     </div>
                     {% if liked_movies %}
-                        <div class="row">
-                            {% for movie in liked_movies|slice:":4" %}
-                            <div class="col-md-3 mb-4">
+                        <div class="row" id="liked-movies-cards">
+                            {% for movie in liked_movies %}
+                            <div class="col-md-3 mb-4 liked-movie-item" {% if forloop.counter > 4 %}style="display:none;"{% endif %}>
                                 <div class="movie-item">
                                     <a href="{% url 'movie_detail' movie.id %}" class="text-decoration-none">
                                         <img src="{{ movie.thumbnail.url }}" alt="{{ movie.title }}" class="img-fluid rounded mb-2 movie-thumbnail">
@@ -115,19 +115,21 @@
         </div>
     </div>
 
-    <!-- Section: Diễn viên yêu thích (dùng giao diện actor-card) -->
     <div class="row mt-4">
         <div class="col-md-12">
             <div class="card shadow-sm">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h2 class="card-title mb-0">Diễn viên yêu thích</h2>
+                        <button id="toggle-actors" class="btn custom-btn-outline liked-btn-outline">
+                            <i class="fas fa-users me-2"></i> <span id="toggle-actors-label">Xem tất cả</span>
+                        </button>
                     </div>
                     {% if user_list.actors.all %}
-                        <div class="row">
+                        <div class="row" id="actors-cards">
                             {% for actor in user_list.actors.all %}
-                            <div class="col-md-2 mb-4">
-                                <div class="card actor-card h-100 position-relative">
+                            <div class="col-md-2 mb-4 actor-item" {% if forloop.counter > 6 %}style="display:none;"{% endif %}>
+                                <div class="actor-card h-100 position-relative">
                                     <a href="{% url 'actor:actor_detail' actor.id %}" class="text-decoration-none">
                                         {% if actor.image %}
                                             <img src="{{ actor.image.url }}" class="card-img-top" alt="{{ actor.name }}">
@@ -337,44 +339,116 @@
     }
     
     /* Actor styling */
-    .actor-item {
-        background-color: #262626;
-        border-radius: 8px;
-        overflow: hidden;
-        transition: transform 0.3s ease-in-out;
+    .movie-item, .actor-card {
+        background: #232933;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+        transition: box-shadow 0.2s, transform 0.2s;
         height: 100%;
-        padding: 12px;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
     }
     
-    .actor-item:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+    .actor-card {
+        min-height: 330px;
+        max-height: 370px;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: center;
+        overflow: hidden;
     }
     
-    .actor-thumbnail {
-        height: 250px;
+    .actor-card .card-img-top {
         width: 100%;
+        height: 220px;
         object-fit: cover;
-        border-radius: 4px;
+        object-position: top center;
+        border-top-left-radius: 12px;
+        border-top-right-radius: 12px;
     }
     
-    .no-image {
-        height: 250px;
+    .actor-info {
+        flex: 1 1 auto;
         width: 100%;
+        padding-bottom: 10px;
+    }
+    
+    .actor-card .card-title, .actor-card .card-subtitle {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        width: 100%;
+    }
+    
+    .actor-card .btn-outline-danger {
+        padding: 0.2rem 0.5rem;
+        font-size: 1rem;
+    }
+    
+    .actor-card .default-actor-image {
+        width: 100%;
+        height: 220px;
+        background: #444;
+        color: #fff;
         display: flex;
         align-items: center;
         justify-content: center;
-        background-color: #404040;
-        color: #e0e0e0;
-        font-size: 3rem;
-        border-radius: 4px;
-    }
-    
-    .actor-title {
-        color: #efefef;
-        font-size: 1.1rem;
-        margin: 8px 0 4px;
-        text-align: center;
+        font-size: 2rem;
+        border-top-left-radius: 12px;
+        border-top-right-radius: 12px;
     }
 </style>
+<script>
+// Toggle phim xem sau
+const toggleWatchlistBtn = document.getElementById('toggle-watchlist');
+const watchlistItems = document.querySelectorAll('.watchlist-item');
+const toggleWatchlistLabel = document.getElementById('toggle-watchlist-label');
+let watchlistExpanded = false;
+toggleWatchlistBtn?.addEventListener('click', function() {
+    watchlistExpanded = !watchlistExpanded;
+    watchlistItems.forEach((item, idx) => {
+        if (watchlistExpanded || idx < 4) {
+            item.style.display = '';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+    toggleWatchlistLabel.textContent = watchlistExpanded ? 'Thu gọn' : 'Xem tất cả';
+});
+// Toggle diễn viên yêu thích
+const toggleActorsBtn = document.getElementById('toggle-actors');
+const actorItems = document.querySelectorAll('.actor-item');
+const toggleActorsLabel = document.getElementById('toggle-actors-label');
+let actorsExpanded = false;
+toggleActorsBtn?.addEventListener('click', function() {
+    actorsExpanded = !actorsExpanded;
+    actorItems.forEach((item, idx) => {
+        if (actorsExpanded || idx < 6) {
+            item.style.display = '';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+    toggleActorsLabel.textContent = actorsExpanded ? 'Thu gọn' : 'Xem tất cả';
+});
+// Toggle phim đã thích
+const toggleLikedMoviesBtn = document.getElementById('toggle-liked-movies');
+const likedMovieItems = document.querySelectorAll('.liked-movie-item');
+const toggleLikedMoviesLabel = document.getElementById('toggle-liked-movies-label');
+let likedMoviesExpanded = false;
+toggleLikedMoviesBtn?.addEventListener('click', function() {
+    likedMoviesExpanded = !likedMoviesExpanded;
+    likedMovieItems.forEach((item, idx) => {
+        if (likedMoviesExpanded || idx < 4) {
+            item.style.display = '';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+    toggleLikedMoviesLabel.textContent = likedMoviesExpanded ? 'Thu gọn' : 'Xem tất cả';
+});
+</script>
 {% endblock %}
