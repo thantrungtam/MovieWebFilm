@@ -59,7 +59,9 @@
                                             <i class="fas fa-star text-warning me-1"></i>
                                             {{ movie.average_rating|floatformat:1 }}
                                         </div>
-                                        <a href="{% url 'remove_from_list' movie.id %}" class="btn action-btn delete-btn">
+                                        <a href="{% url 'remove_from_list' movie.id %}"
+                                           class="btn action-btn delete-btn btn-remove-watchlist"
+                                           data-movie-id="{{ movie.id }}" type="button">
                                             <i class="fas fa-trash-alt me-1"></i> Xóa
                                         </a>
                                     </div>
@@ -99,7 +101,9 @@
                                             <i class="fas fa-star text-warning me-1"></i>
                                             {{ movie.average_rating|floatformat:1 }}
                                         </div>
-                                        <a href="{% url 'like_movie' movie.id %}" class="btn action-btn unlike-btn">
+                                        <a href="{% url 'like_movie' movie.id %}"
+                                           class="btn action-btn unlike-btn btn-unlike-movie"
+                                           data-movie-id="{{ movie.id }}" type="button">
                                             <i class="fas fa-heart-broken me-1"></i> Bỏ thích
                                         </a>
                                     </div>
@@ -143,10 +147,12 @@
                                             {% if actor.alternate_name %}
                                             <h6 class="card-subtitle mb-2 text-muted">{{ actor.alternate_name }}</h6>
                                             {% endif %}
+                                            <a href="{% url 'remove_actor_from_list' actor.id %}"
+                                               class="btn btn-outline-danger btn-sm mt-2 btn-remove-actor"
+                                               data-actor-id="{{ actor.id }}" type="button">
+                                                <i class="fas fa-trash-alt"></i> Xóa
+                                            </a>
                                         </div>
-                                    </a>
-                                    <a href="{% url 'remove_actor_from_list' actor.id %}" class="btn btn-outline-danger btn-sm position-absolute top-0 end-0 m-2" style="z-index:2;">
-                                        <i class="fas fa-trash-alt"></i>
                                     </a>
                                 </div>
                             </div>
@@ -402,6 +408,22 @@
     }
 </style>
 <script>
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+const csrftoken = getCookie('csrftoken');
+
 // Toggle phim xem sau
 const toggleWatchlistBtn = document.getElementById('toggle-watchlist');
 const watchlistItems = document.querySelectorAll('.watchlist-item');
@@ -418,6 +440,7 @@ toggleWatchlistBtn?.addEventListener('click', function() {
     });
     toggleWatchlistLabel.textContent = watchlistExpanded ? 'Thu gọn' : 'Xem tất cả';
 });
+
 // Toggle diễn viên yêu thích
 const toggleActorsBtn = document.getElementById('toggle-actors');
 const actorItems = document.querySelectorAll('.actor-item');
@@ -434,6 +457,7 @@ toggleActorsBtn?.addEventListener('click', function() {
     });
     toggleActorsLabel.textContent = actorsExpanded ? 'Thu gọn' : 'Xem tất cả';
 });
+
 // Toggle phim đã thích
 const toggleLikedMoviesBtn = document.getElementById('toggle-liked-movies');
 const likedMovieItems = document.querySelectorAll('.liked-movie-item');
@@ -449,6 +473,66 @@ toggleLikedMoviesBtn?.addEventListener('click', function() {
         }
     });
     toggleLikedMoviesLabel.textContent = likedMoviesExpanded ? 'Thu gọn' : 'Xem tất cả';
+});
+
+// AJAX Bỏ thích phim
+Array.from(document.querySelectorAll('.btn-unlike-movie')).forEach(btn => {
+    btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        fetch(this.href, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': csrftoken
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if(data.success) {
+                this.closest('.liked-movie-item').remove();
+            }
+        });
+    });
+});
+
+// AJAX Xóa phim khỏi xem sau
+Array.from(document.querySelectorAll('.btn-remove-watchlist')).forEach(btn => {
+    btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        fetch(this.href, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': csrftoken
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if(data.success) {
+                this.closest('.watchlist-item').remove();
+            }
+        });
+    });
+});
+
+// AJAX Xóa diễn viên yêu thích
+Array.from(document.querySelectorAll('.btn-remove-actor')).forEach(btn => {
+    btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        fetch(this.href, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': csrftoken
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if(data.status === 'success') {
+                this.closest('.actor-item').remove();
+            }
+        });
+    });
 });
 </script>
 {% endblock %}

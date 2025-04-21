@@ -29,6 +29,8 @@ def like_movie(request, movie_id):
     like, created = Like.objects.get_or_create(user=request.user, movie = movie)
     if not created:
         like.delete()
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return JsonResponse({'success': True})
     return redirect('movie_detail', pk=movie_id)
 
 
@@ -61,7 +63,9 @@ def remove_from_list(request, movie_id):
         messages.success(request, f'{movie.title} was removed from your list!')
     else:
         messages.error(request, f'{movie.title} is not in your list.')
-    return redirect('movie_detail', pk = movie_id)
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return JsonResponse({'success': True})
+    return redirect('view_user_list')
 
 @login_required
 def add_actor_to_list(request, actor_id):
