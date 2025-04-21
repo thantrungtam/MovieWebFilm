@@ -1,447 +1,337 @@
 {% extends 'base.html' %}
 {% block title %} Danh sách phim của {{ user.username }} - Mẹt Phim{% endblock %}
-
-{% block additional_styles %}
-<style>
-    /* User Profile Section */
-    .profile-section {
-        margin-top: 60px;
-        padding: 30px 0;
-        background-color: var(--card-bg);
-        border-radius: var(--border-radius);
-        position: relative;
-        overflow: hidden;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
-    }
-    
-    .profile-background {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(135deg, #1e272e 0%, #131921 100%);
-        opacity: 0.8;
-        z-index: 0;
-    }
-    
-    .profile-content {
-        position: relative;
-        z-index: 1;
-    }
-    
-    .profile-photo {
-        width: 160px;
-        height: 160px;
-        border-radius: 50%;
-        border: 4px solid var(--primary-color);
-        background-color: var(--card-bg);
-        object-fit: cover;
-        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
-        margin: 0 auto 20px;
-        display: block;
-    }
-    
-    .profile-avatar {
-        width: 160px;
-        height: 160px;
-        border-radius: 50%;
-        border: 4px solid var(--primary-color);
-        background-color: var(--primary-color);
-        color: white;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 4rem;
-        margin: 0 auto 20px;
-        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
-    }
-    
-    .profile-info {
-        text-align: center;
-    }
-    
-    .profile-name {
-        font-size: 2.2rem;
-        font-weight: 700;
-        margin-bottom: 5px;
-        background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
-        -webkit-background-clip: text;
-        background-clip: text;
-        color: transparent;
-        text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
-    }
-    
-    .profile-subtext {
-        color: var(--text-muted);
-        font-size: 1.1rem;
-        margin-bottom: 20px;
-    }
-    
-    /* Tab Navigation */
-    .list-tabs {
-        display: flex;
-        justify-content: center;
-        margin: 30px 0 20px;
-        border: none;
-    }
-    
-    .list-tab-item {
-        padding: 12px 24px;
-        font-weight: 600;
-        color: var(--text-light);
-        background: transparent;
-        border: none;
-        border-radius: 50px;
-        margin: 0 10px;
-        cursor: pointer;
-        transition: all 0.3s;
-        position: relative;
-    }
-    
-    .list-tab-item:hover {
-        color: var(--primary-light);
-        background: rgba(255, 255, 255, 0.05);
-    }
-    
-    .list-tab-item.active {
-        color: white;
-        background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
-        box-shadow: 0 5px 15px rgba(255, 71, 87, 0.3);
-    }
-    
-    /* Movie Grid */
-    .movies-container {
-        padding: 20px 0 40px;
-    }
-    
-    .movie-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-        gap: 25px;
-        margin-top: 20px;
-    }
-    
-    .movie-card {
-        position: relative;
-        height: 0;
-        padding-top: 150%;
-        border-radius: var(--border-radius);
-        overflow: hidden;
-        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25);
-        transition: transform 0.3s, box-shadow 0.3s;
-    }
-    
-    .movie-card:hover {
-        transform: translateY(-8px);
-        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.35);
-    }
-    
-    .movie-poster {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-    
-    .movie-overlay {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        padding: 20px;
-        background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.7) 60%, transparent 100%);
-        transform: translateY(0);
-        transition: transform 0.3s;
-    }
-    
-    .movie-card:hover .movie-overlay {
-        transform: translateY(-10px);
-    }
-    
-    .movie-title {
-        font-size: 1rem;
-        font-weight: 600;
-        color: white;
-        margin-bottom: 8px;
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-    }
-    
-    .movie-meta {
-        display: flex;
-        align-items: center;
-        margin-bottom: 10px;
-    }
-    
-    .movie-rating {
-        display: flex;
-        align-items: center;
-        margin-right: 15px;
-        font-size: 0.9rem;
-    }
-    
-    .movie-rating i {
-        color: #ffc107;
-        margin-right: 4px;
-    }
-    
-    .movie-views {
-        display: flex;
-        align-items: center;
-        font-size: 0.9rem;
-    }
-    
-    .movie-views i {
-        color: var(--secondary-color);
-        margin-right: 4px;
-    }
-    
-    .movie-actions {
-        display: flex;
-        justify-content: space-between;
-    }
-    
-    .movie-action-btn {
-        flex: 1;
-        padding: 6px 0;
-        font-size: 0.85rem;
-        font-weight: 600;
-        text-align: center;
-        border-radius: 4px;
-        border: none;
-        cursor: pointer;
-        transition: all 0.2s;
-    }
-    
-    .movie-action-btn:hover {
-        transform: translateY(-2px);
-    }
-    
-    .movie-action-btn.view {
-        background-color: var(--primary-color);
-        color: white;
-        margin-right: 8px;
-    }
-    
-    .movie-action-btn.view:hover {
-        background-color: var(--primary-dark);
-    }
-    
-    .movie-action-btn.remove {
-        background-color: #e74c3c;
-        color: white;
-    }
-    
-    .movie-action-btn.remove:hover {
-        background-color: #c0392b;
-    }
-    
-    .movie-action-btn.unlike {
-        background-color: #7f8c8d;
-        color: white;
-    }
-    
-    .movie-action-btn.unlike:hover {
-        background-color: #2c3e50;
-    }
-    
-    /* Empty State */
-    .empty-state {
-        text-align: center;
-        padding: 40px 20px;
-        color: var(--text-muted);
-    }
-    
-    .empty-state i {
-        font-size: 3rem;
-        margin-bottom: 15px;
-        display: block;
-    }
-    
-    .empty-state p {
-        font-size: 1.1rem;
-    }
-    
-    @media (max-width: 768px) {
-        .movie-grid {
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            gap: 15px;
-        }
-        
-        .profile-photo, .profile-avatar {
-            width: 120px;
-            height: 120px;
-            font-size: 3rem;
-        }
-        
-        .profile-name {
-            font-size: 1.8rem;
-        }
-        
-        .list-tab-item {
-            padding: 10px 15px;
-            font-size: 0.9rem;
-        }
-    }
-</style>
-{% endblock %}
-
 {% block content %}
-<div class="container mt-5 pt-5">
-    <div class="profile-section">
-        <div class="profile-background"></div>
-        <div class="profile-content">
-            <div class="row justify-content-center">
-                <div class="col-md-10 col-lg-8">
-                    <div class="profile-info">
-                        {% if user.profile.profile_photo %}
-                        <img src="{{ user.profile.profile_photo.url }}" alt="{{ user.username }}" class="profile-photo">
-                        {% else %}
-                        <div class="profile-avatar">
-                            {{ user.username|make_list|first|upper }}
-                        </div>
-                        {% endif %}
-                        <h1 class="profile-name">{{ user.username }}</h1>
-                        <p class="profile-subtext">Bộ sưu tập phim cá nhân</p>
-                        
-                        <div class="list-tabs">
-                            <button class="list-tab-item active" data-target="movies-watchlist">
-                                <i class="bi bi-bookmark-fill me-2"></i>Xem sau
-                            </button>
-                            <button class="list-tab-item" data-target="movies-liked">
-                                <i class="bi bi-heart-fill me-2"></i>Đã thích
-                            </button>
-                        </div>
+<!-- Add spacer to prevent content from overlapping with navbar -->
+<div class="navbar-spacer"></div>
+
+<div class="user-list-hero">
+    <div class="user-list-hero-overlay">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-4">
+                    {% if user.profile.profile_photo %}
+                    <img src="{{ user.profile.profile_photo.url }}" alt="{{ user.username }}" class="img-fluid rounded-circle shadow-lg user-avatar">
+                    {% else %}
+                    <div class="default-avatar rounded-circle bg-primary text-white">
+                        {{ user.username|make_list|first|upper }}
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="col-md-8">
+                    <h1 class="user-list-title mb-3">Danh sách phim của {{ user.username }}</h1>
+                    <p class="lead">Khám phá bộ sưu tập phim của {{ user.username }} tuyển chọn.</p>
+                    <div class="mt-3">
+                        <a href="{% url 'view_user_list' %}" class="btn custom-btn collection-btn me-2">
+                            <i class="fas fa-bookmark me-2"></i> Xem sau
+                        </a>
+                        <a href="{% url 'favorite_movies' %}" class="btn custom-btn liked-btn me-2">
+                            <i class="fas fa-heart me-2"></i> Phim đã thích
+                        </a>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
-    
-    <div class="movies-container">
-        <div id="movies-watchlist" class="movie-tab-content">
-            <div class="row">
-                <div class="col-12">
-                    <h2 class="section-title">
-                        <i class="bi bi-bookmark-fill"></i>
-                        Danh sách phim xem sau
-                    </h2>
-                </div>
-            </div>
-            
-            {% if user_list.movies.all %}
-            <div class="movie-grid">
-                {% for movie in user_list.movies.all %}
-                <div class="movie-card">
-                    <img src="{{ movie.thumbnail.url }}" alt="{{ movie.title }}" class="movie-poster">
-                    <div class="movie-overlay">
-                        <h5 class="movie-title">{{ movie.title }}</h5>
-                        <div class="movie-meta">
-                            <div class="movie-rating">
-                                <i class="bi bi-star-fill"></i>
-                                <span>{{ movie.average_rating|floatformat:1 }}</span>
-                            </div>
-                            <div class="movie-views">
-                                <i class="bi bi-eye-fill"></i>
-                                <span>{{ movie.views }}</span>
-                            </div>
-                        </div>
-                        <div class="movie-actions">
-                            <a href="{% url 'movie_detail' movie.id %}" class="movie-action-btn view">
-                                <i class="bi bi-play-fill me-1"></i>Xem
-                            </a>
-                            <a href="{% url 'remove_from_list' movie.id %}" class="movie-action-btn remove">
-                                <i class="bi bi-trash-fill me-1"></i>Xóa
-                            </a>
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-            {% else %}
-            <div class="empty-state">
-                <i class="bi bi-bookmark"></i>
-                <p>Bạn chưa thêm phim nào vào danh sách xem sau.</p>
-            </div>
-            {% endif %}
-        </div>
-        
-        <div id="movies-liked" class="movie-tab-content" style="display: none;">
-            <div class="row">
-                <div class="col-12">
-                    <h2 class="section-title">
-                        <i class="bi bi-heart-fill"></i>
-                        Phim đã thích
-                    </h2>
-                </div>
-            </div>
-            
-            {% if liked_movies %}
-            <div class="movie-grid">
-                {% for movie in liked_movies %}
-                <div class="movie-card">
-                    <img src="{{ movie.thumbnail.url }}" alt="{{ movie.title }}" class="movie-poster">
-                    <div class="movie-overlay">
-                        <h5 class="movie-title">{{ movie.title }}</h5>
-                        <div class="movie-meta">
-                            <div class="movie-rating">
-                                <i class="bi bi-star-fill"></i>
-                                <span>{{ movie.average_rating|floatformat:1 }}</span>
-                            </div>
-                            <div class="movie-views">
-                                <i class="bi bi-eye-fill"></i>
-                                <span>{{ movie.views }}</span>
-                            </div>
-                        </div>
-                        <div class="movie-actions">
-                            <a href="{% url 'movie_detail' movie.id %}" class="movie-action-btn view">
-                                <i class="bi bi-play-fill me-1"></i>Xem
-                            </a>
-                            <a href="{% url 'like_movie' movie.id %}" class="movie-action-btn unlike">
-                                <i class="bi bi-heart-fill me-1"></i>Bỏ thích
-                            </a>
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-            {% else %}
-            <div class="empty-state">
-                <i class="bi bi-heart"></i>
-                <p>Bạn chưa thích phim nào.</p>
-            </div>
-            {% endif %}
         </div>
     </div>
 </div>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const tabItems = document.querySelectorAll('.list-tab-item');
-        
-        tabItems.forEach(item => {
-            item.addEventListener('click', function() {
-                // Remove active class from all tabs
-                tabItems.forEach(tab => tab.classList.remove('active'));
-                
-                // Add active class to clicked tab
-                this.classList.add('active');
-                
-                // Hide all content sections
-                document.querySelectorAll('.movie-tab-content').forEach(content => {
-                    content.style.display = 'none';
-                });
-                
-                // Show the selected content
-                const targetId = this.getAttribute('data-target');
-                document.getElementById(targetId).style.display = 'block';
-            });
-        });
-    });
-</script>
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2 class="card-title mb-0">Danh sách phim xem sau</h2>
+                        <a href="{% url 'view_user_list' %}" class="btn custom-btn-outline collection-btn-outline">
+                            <i class="fas fa-list me-2"></i> Xem tất cả
+                        </a>
+                    </div>
+                    {% if user_list.movies.all %}
+                        <div class="row">
+                            {% for movie in user_list.movies.all|slice:":4" %}
+                            <div class="col-md-3 mb-4">
+                                <div class="movie-item">
+                                    <a href="{% url 'movie_detail' movie.id %}" class="text-decoration-none">
+                                        <img src="{{ movie.thumbnail.url }}" alt="{{ movie.title }}" class="img-fluid rounded mb-2 movie-thumbnail">
+                                        <h5 class="movie-title">{{ movie.title }}</h5>
+                                    </a>
+                                    <div class="d-flex justify-content-between align-items-center mt-2">
+                                        <div class="movie-rating">
+                                            <i class="fas fa-star text-warning me-1"></i>
+                                            {{ movie.average_rating|floatformat:1 }}
+                                        </div>
+                                        <a href="{% url 'remove_from_list' movie.id %}" class="btn action-btn delete-btn">
+                                            <i class="fas fa-trash-alt me-1"></i> Xóa
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted">Không có phim trong danh sách được thêm gần đây.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2 class="card-title mb-0">Phim đã thích</h2>
+                        <a href="{% url 'favorite_movies' %}" class="btn custom-btn-outline liked-btn-outline">
+                            <i class="fas fa-heart me-2"></i> Xem tất cả
+                        </a>
+                    </div>
+                    {% if liked_movies %}
+                        <div class="row">
+                            {% for movie in liked_movies|slice:":4" %}
+                            <div class="col-md-3 mb-4">
+                                <div class="movie-item">
+                                    <a href="{% url 'movie_detail' movie.id %}" class="text-decoration-none">
+                                        <img src="{{ movie.thumbnail.url }}" alt="{{ movie.title }}" class="img-fluid rounded mb-2 movie-thumbnail">
+                                        <h5 class="movie-title">{{ movie.title }}</h5>
+                                    </a>
+                                    <div class="d-flex justify-content-between align-items-center mt-2">
+                                        <div class="movie-rating">
+                                            <i class="fas fa-star text-warning me-1"></i>
+                                            {{ movie.average_rating|floatformat:1 }}
+                                        </div>
+                                        <a href="{% url 'like_movie' movie.id %}" class="btn action-btn unlike-btn">
+                                            <i class="fas fa-heart-broken me-1"></i> Bỏ thích
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted">Bạn chưa thích phim nào.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+<style>
+    /* Spacer to prevent content from overlapping with fixed navbar */
+    .navbar-spacer {
+        height: 70px; /* Adjust height to match your navbar height */
+    }
+    
+    .user-list-hero {
+        background-image: url('/media/movie_thumbnails/list-wallpaper.jpg');
+        background-size: cover;
+        background-position: center;
+        position: relative;
+        min-height: 300px;
+        color: white;
+        margin-top: 0; /* Remove top margin */
+        z-index: 1;
+    }
+    
+    .user-list-hero-overlay {
+        background-color: rgba(0, 0, 0, 0.7); /* Simpler background */
+        padding: 50px 0;
+        position: relative;
+        z-index: 1;
+    }
+    
+    .user-avatar {
+        width: 200px;
+        height: 200px;
+        object-fit: cover;
+        border: 3px solid white;
+    }
+    
+    .default-avatar {
+        width: 200px;
+        height: 200px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 5rem;
+        border: 3px solid white;
+    }
+    
+    .user-list-title {
+        font-size: 2.5rem;
+        font-weight: bold;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+    }
+    
+    .movie-item {
+        transition: transform 0.3s ease-in-out;
+    }
+    
+    .movie-item:hover {
+        transform: translateY(-5px);
+    }
+    
+    .movie-thumbnail {
+        height: 300px;
+        object-fit: cover;
+    }
+    
+    .movie-title {
+        color: #efefef;
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .movie-rating {
+        font-size: 0.9rem;
+    }
+    
+    .card-title {
+        color: #efefef;
+        border-bottom: 2px solid #007bff;
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+    }
+    
+    /* Custom buttons styling */
+    .custom-btn {
+        padding: 8px 18px;
+        border-radius: 50px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        border: none;
+        box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+    }
+    
+    .custom-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+    }
+    
+    .custom-btn-outline {
+        padding: 8px 18px;
+        border-radius: 50px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        background: transparent;
+    }
+    
+    .custom-btn-outline:hover {
+        transform: translateY(-3px);
+    }
+    
+    .collection-btn {
+        background: linear-gradient(45deg, #3498db, #2980b9);
+        color: white;
+    }
+    
+    .collection-btn:hover {
+        background: linear-gradient(45deg, #2980b9, #3498db);
+        color: white;
+    }
+    
+    .collection-btn-outline {
+        border: 2px solid #3498db;
+        color: #3498db;
+    }
+    
+    .collection-btn-outline:hover {
+        background-color: rgba(52, 152, 219, 0.1);
+        color: #3498db;
+    }
+    
+    .liked-btn {
+        background: linear-gradient(45deg, #e74c3c, #c0392b);
+        color: white;
+    }
+    
+    .liked-btn:hover {
+        background: linear-gradient(45deg, #c0392b, #e74c3c);
+        color: white;
+    }
+    
+    .liked-btn-outline {
+        border: 2px solid #e74c3c;
+        color: #e74c3c;
+    }
+    
+    .liked-btn-outline:hover {
+        background-color: rgba(231, 76, 60, 0.1);
+        color: #e74c3c;
+    }
+    
+    .action-btn {
+        padding: 6px 12px;
+        border-radius: 50px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .action-btn:hover {
+        transform: translateY(-2px);
+    }
+    
+    .delete-btn {
+        background-color: #e74c3c;
+        color: white;
+        border: none;
+    }
+    
+    .delete-btn:hover {
+        background-color: #c0392b;
+        color: white;
+    }
+    
+    .unlike-btn {
+        background-color: #7f8c8d;
+        color: white;
+        border: none;
+    }
+    
+    .unlike-btn:hover {
+        background-color: #2c3e50;
+        color: white;
+    }
+    
+    /* Actor styling */
+    .actor-item {
+        background-color: #262626;
+        border-radius: 8px;
+        overflow: hidden;
+        transition: transform 0.3s ease-in-out;
+        height: 100%;
+        padding: 12px;
+    }
+    
+    .actor-item:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+    }
+    
+    .actor-thumbnail {
+        height: 250px;
+        width: 100%;
+        object-fit: cover;
+        border-radius: 4px;
+    }
+    
+    .no-image {
+        height: 250px;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #404040;
+        color: #e0e0e0;
+        font-size: 3rem;
+        border-radius: 4px;
+    }
+    
+    .actor-title {
+        color: #efefef;
+        font-size: 1.1rem;
+        margin: 8px 0 4px;
+        text-align: center;
+    }
+</style>
 {% endblock %}

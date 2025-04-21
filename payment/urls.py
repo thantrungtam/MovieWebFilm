@@ -22,8 +22,10 @@ urlpatterns = [
     # Display subscription plans
     path('plans/', views.subscription_plans, name='subscription_plans'),
     
-    # Payment process
+    # Payment processors
     path('process-subscription/<int:plan_id>/', views.process_subscription, name='process_subscription'),
+    
+    # General payment paths
     path('cancel/', views.cancel_payment, name='cancel_payment'),
     path('success/', views.subscription_success, name='subscription_success'),
     path('failed/', views.payment_failed, name='payment_failed'),

@@ -5,6 +5,7 @@ from movies.models import Movie
 from actor.models import Actor
 from django.contrib import messages
 from django.http import JsonResponse
+from django.utils import timezone
 
 @login_required
 def rate_movie(request, movie_id):
@@ -196,20 +197,32 @@ def watch_movie(request, movie_id):
     
     # Check if this is a premium movie
     if movie.is_premium:
-        # Check if user has a valid subscription
-        user_has_subscription = False
-        
-        # Get the user's active subscriptions
-        active_subscriptions = request.user.subscriptions.filter(is_active=True)
-        for subscription in active_subscriptions:
-            if subscription.is_valid():
-                user_has_subscription = True
-                break
-        
-        # If the user doesn't have a valid subscription, redirect to subscription page
-        if not user_has_subscription:
-            messages.error(request, 'Bạn cần có gói Premium để xem phim này.')
+        # Check if user is premium using the context processor's logic
+        try:
+            from payment.models import Subscription
+            subscription = Subscription.objects.filter(
+                user=request.user,
+                is_active=True,
+                end_date__gt=timezone.now()
+            ).first()
+            
+            if not subscription:
+                messages.warning(request, 'Bạn cần có gói Premium để xem phim này. Vui lòng nâng cấp tài khoản.')
+                return redirect('payment:subscription_plans')
+        except Exception as e:
+            # Log error and redirect to subscription page
+            print(f"Error checking subscription: {str(e)}")
+            messages.error(request, 'Không thể xác minh trạng thái Premium. Vui lòng thử lại sau.')
             return redirect('payment:subscription_plans')
+    
+    # Check if movie has a future screening schedule
+    if movie.screening_schedule and movie.screening_schedule > timezone.now():
+        messages.info(request, f'Phim "{movie.title}" chưa đến thời gian chiếu. Vui lòng quay lại vào ngày {movie.screening_schedule.strftime("%d/%m/%Y %H:%M")}.')
+        return redirect('movie_detail', pk=movie_id)
+    
+    # Increment view count
+    movie.views += 1
+    movie.save()
     
     return render(request, 'watch_movie.html', {'movie': movie})
 

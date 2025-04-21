@@ -1,0 +1,273 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}VNPAY - Thanh toán{% endblock %}
+
+{% block additional_styles %}
+<link rel="stylesheet" href="{% static 'css/payment.css' %}">
+<style>
+    .vnpay-container {
+        padding-top: 70px;
+        padding-bottom: 50px;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    
+    .vnpay-header {
+        background-color: #0066b3;
+        color: white;
+        padding: 15px;
+        text-align: center;
+        border-top-left-radius: var(--border-radius);
+        border-top-right-radius: var(--border-radius);
+    }
+    
+    .vnpay-logo {
+        height: 40px;
+        margin-bottom: 10px;
+    }
+    
+    .payment-methods {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .payment-method {
+        border: 1px solid #dee2e6;
+        border-radius: var(--border-radius);
+        padding: 15px;
+        text-align: center;
+        flex: 1 0 calc(25% - 15px);
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .payment-method:hover {
+        border-color: #0066b3;
+        box-shadow: 0 5px 15px rgba(0, 102, 179, 0.2);
+    }
+    
+    .payment-method.active {
+        border-color: #0066b3;
+        background-color: rgba(0, 102, 179, 0.1);
+    }
+    
+    .payment-method img {
+        height: 30px;
+        margin-bottom: 10px;
+    }
+    
+    .bank-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 15px;
+    }
+    
+    .bank-item {
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        padding: 10px;
+        width: calc(20% - 10px);
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .bank-item:hover {
+        border-color: #0066b3;
+        box-shadow: 0 2px 5px rgba(0, 102, 179, 0.2);
+    }
+    
+    .bank-item.selected {
+        border-color: #0066b3;
+        background-color: rgba(0, 102, 179, 0.1);
+    }
+    
+    .bank-item img {
+        width: 100%;
+        height: 40px;
+        object-fit: contain;
+    }
+    
+    .timer {
+        color: #dc3545;
+        font-weight: bold;
+        font-size: 1.2rem;
+    }
+    
+    .payment-summary {
+        background-color: rgba(0, 102, 179, 0.05);
+        border-radius: var(--border-radius);
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    }
+    
+    .summary-row:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+    
+    .summary-total {
+        font-weight: bold;
+        font-size: 1.1rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container vnpay-container">
+    <div class="card shadow">
+        <div class="vnpay-header">
+            <img src="{% static 'images/vnpay-logo.png' %}" alt="VNPAY" class="vnpay-logo">
+            <h4 class="mb-0">Thanh toán đơn hàng</h4>
+        </div>
+        <div class="card-body p-4">
+            <div class="payment-summary">
+                <h5 class="mb-3">Thông tin đơn hàng</h5>
+                <div class="summary-row">
+                    <span>Mã đơn hàng</span>
+                    <span>{{ order_id|default:"MP123456789" }}</span>
+                </div>
+                <div class="summary-row">
+                    <span>Gói đăng ký</span>
+                    <span>{{ plan.name|default:"Premium" }}</span>
+                </div>
+                <div class="summary-row">
+                    <span>Thời hạn</span>
+                    <span>{{ plan.duration_months|default:"3" }} tháng</span>
+                </div>
+                <div class="summary-row summary-total">
+                    <span>Tổng tiền</span>
+                    <span>{{ plan.price|default:"299,000" }} VND</span>
+                </div>
+            </div>
+            
+            <div class="mb-4">
+                <p class="text-center mb-1">Đơn hàng sẽ hết hạn sau</p>
+                <p class="text-center timer" id="countdown">15:00</p>
+            </div>
+            
+            <h5 class="mb-3">Chọn phương thức thanh toán</h5>
+            
+            <div class="payment-methods">
+                <div class="payment-method active" onclick="selectMethod(this)">
+                    <img src="{% static 'images/atm-card.png' %}" alt="ATM">
+                    <div>Thẻ ATM</div>
+                </div>
+                <div class="payment-method" onclick="selectMethod(this)">
+                    <img src="{% static 'images/credit-card.png' %}" alt="Thẻ tín dụng">
+                    <div>Thẻ tín dụng</div>
+                </div>
+                <div class="payment-method" onclick="selectMethod(this)">
+                    <img src="{% static 'images/vnpay-ewallet.png' %}" alt="Ví VNPAY">
+                    <div>Ví VNPAY</div>
+                </div>
+                <div class="payment-method" onclick="selectMethod(this)">
+                    <img src="{% static 'images/qr-code.png' %}" alt="QR Code">
+                    <div>QR Code</div>
+                </div>
+            </div>
+            
+            <h5 class="mb-3">Chọn ngân hàng</h5>
+            
+            <div class="bank-list">
+                <div class="bank-item" onclick="selectBank(this)">
+                    <img src="{% static 'images/vietcombank.png' %}" alt="Vietcombank">
+                </div>
+                <div class="bank-item" onclick="selectBank(this)">
+                    <img src="{% static 'images/vietinbank.png' %}" alt="Vietinbank">
+                </div>
+                <div class="bank-item" onclick="selectBank(this)">
+                    <img src="{% static 'images/bidv.png' %}" alt="BIDV">
+                </div>
+                <div class="bank-item" onclick="selectBank(this)">
+                    <img src="{% static 'images/agribank.png' %}" alt="Agribank">
+                </div>
+                <div class="bank-item" onclick="selectBank(this)">
+                    <img src="{% static 'images/techcombank.png' %}" alt="Techcombank">
+                </div>
+                <div class="bank-item" onclick="selectBank(this)">
+                    <img src="{% static 'images/mb.png' %}" alt="MB Bank">
+                </div>
+                <div class="bank-item" onclick="selectBank(this)">
+                    <img src="{% static 'images/tpbank.png' %}" alt="TPBank">
+                </div>
+                <div class="bank-item" onclick="selectBank(this)">
+                    <img src="{% static 'images/vpbank.png' %}" alt="VPBank">
+                </div>
+                <div class="bank-item" onclick="selectBank(this)">
+                    <img src="{% static 'images/acb.png' %}" alt="ACB">
+                </div>
+                <div class="bank-item" onclick="selectBank(this)">
+                    <img src="{% static 'images/hdbank.png' %}" alt="HDBank">
+                </div>
+            </div>
+            
+            <div class="mt-4 text-center">
+                <a href="{% url 'payment:subscription_success' %}" class="btn btn-primary btn-lg">
+                    Xác nhận thanh toán
+                </a>
+                <a href="{% url 'payment:subscription_plans' %}" class="btn btn-outline-secondary ms-2">
+                    Hủy
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Chọn phương thức thanh toán
+    function selectMethod(element) {
+        document.querySelectorAll('.payment-method').forEach(method => {
+            method.classList.remove('active');
+        });
+        element.classList.add('active');
+    }
+    
+    // Chọn ngân hàng
+    function selectBank(element) {
+        document.querySelectorAll('.bank-item').forEach(bank => {
+            bank.classList.remove('selected');
+        });
+        element.classList.add('selected');
+    }
+    
+    // Đếm ngược thời gian
+    function startCountdown(duration, display) {
+        var timer = duration, minutes, seconds;
+        setInterval(function () {
+            minutes = parseInt(timer / 60, 10);
+            seconds = parseInt(timer % 60, 10);
+            
+            minutes = minutes < 10 ? "0" + minutes : minutes;
+            seconds = seconds < 10 ? "0" + seconds : seconds;
+            
+            display.textContent = minutes + ":" + seconds;
+            
+            if (--timer < 0) {
+                timer = 0;
+                // Chuyển hướng khi hết thời gian
+                window.location.href = "{% url 'payment:payment_failed' %}";
+            }
+        }, 1000);
+    }
+    
+    window.onload = function () {
+        var fifteenMinutes = 60 * 15,
+            display = document.querySelector('#countdown');
+        startCountdown(fifteenMinutes, display);
+    };
+</script>
+{% endblock %} 

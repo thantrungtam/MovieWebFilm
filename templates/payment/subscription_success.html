@@ -1,13 +1,22 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Đăng Ký Thành Công{% endblock %}
+{% block title %}Đăng ký thành công{% endblock %}
 
 {% block additional_styles %}
+<link rel="stylesheet" href="{% static 'css/payment.css' %}">
 <style>
     .success-container {
-        padding-top: 100px;
-        padding-bottom: 50px;
+        padding-top: 80px;
+        padding-bottom: 80px;
+        max-width: 700px;
+        margin: 0 auto;
+    }
+    
+    .success-icon {
+        font-size: 80px;
+        color: #28a745;
+        margin-bottom: 20px;
     }
     
     .success-card {
@@ -17,100 +26,92 @@
     }
     
     .success-header {
-        background: linear-gradient(45deg, #28a745, #20c997);
-        padding: 25px;
-        border-radius: 0;
-    }
-    
-    .success-icon {
-        font-size: 50px;
-        color: #fff;
-        margin-bottom: 15px;
-    }
-    
-    .success-image {
-        width: 120px;
-        height: 120px;
-        object-fit: contain;
-        margin: 20px auto;
+        background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+        padding: 20px;
+        text-align: center;
     }
     
     .subscription-details {
-        background-color: rgba(32, 201, 151, 0.1);
-        border: 1px solid rgba(32, 201, 151, 0.2);
+        background-color: rgba(40, 167, 69, 0.1);
         border-radius: var(--border-radius);
         padding: 20px;
+        margin-bottom: 20px;
     }
     
-    .action-button {
-        border-radius: 50px;
-        padding: 10px 25px;
-        font-weight: 600;
-        transition: all 0.3s ease;
-    }
-    
-    .action-button:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-    }
-    
-    .premium-badge {
-        background: linear-gradient(45deg, #ffd700, #ffa500);
-        color: #000;
-        font-weight: 600;
-        padding: 5px 15px;
-        border-radius: 20px;
-        display: inline-block;
+    .detail-row {
+        display: flex;
+        justify-content: space-between;
         margin-bottom: 10px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    }
+    
+    .detail-row:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+    
+    .detail-label {
+        font-weight: 500;
+        color: #6c757d;
+    }
+    
+    .detail-value {
+        font-weight: 600;
+    }
+    
+    .action-buttons {
+        margin-top: 30px;
+        display: flex;
+        justify-content: center;
+        gap: 15px;
     }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="container success-container">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card success-card shadow">
-                <div class="success-header text-center">
-                    <i class="fas fa-check-circle success-icon"></i>
-                    <h2 class="text-white mb-0">Thanh Toán Thành Công</h2>
+    <div class="card shadow success-card">
+        <div class="card-header success-header">
+            <i class="fas fa-check-circle success-icon"></i>
+            <h2 class="text-white mb-0">Đăng ký thành công!</h2>
+        </div>
+        <div class="card-body">
+            <div class="text-center mb-4">
+                <p class="lead">Cảm ơn bạn đã đăng ký gói Premium của chúng tôi.</p>
+                <p>Tài khoản của bạn đã được nâng cấp và bạn có thể bắt đầu tận hưởng tất cả các tính năng cao cấp ngay bây giờ.</p>
+            </div>
+            
+            {% if subscription %}
+            <h4 class="mb-3">Thông tin đăng ký</h4>
+            <div class="subscription-details">
+                <div class="detail-row">
+                    <span class="detail-label">Gói:</span>
+                    <span class="detail-value">{{ subscription.plan.name }}</span>
                 </div>
-                <div class="card-body text-center p-5">
-                    <img src="{% static 'images/success.png' %}" alt="Success" class="success-image">
-                    
-                    <h3 class="mb-4">Cảm ơn bạn đã đăng ký!</h3>
-                    
-                    {% if subscription %}
-                    <div class="subscription-details mb-4">
-                        <span class="premium-badge">
-                            <i class="fas fa-crown me-2"></i>PREMIUM
-                        </span>
-                        <h5 class="mb-3">Chi Tiết Gói Đăng Ký</h5>
-                        <div class="row">
-                            <div class="col-md-4">
-                                <p><strong>Gói:</strong> <span class="badge bg-primary">{{ subscription.plan.name }}</span></p>
-                            </div>
-                            <div class="col-md-4">
-                                <p><strong>Trạng thái:</strong> <span class="badge bg-success">Đang hoạt động</span></p>
-                            </div>
-                            <div class="col-md-4">
-                                <p><strong>Có hiệu lực đến:</strong> {{ subscription.end_date|date:"d/m/Y" }}</p>
-                            </div>
-                        </div>
-                    </div>
-                    {% endif %}
-                    
-                    <p class="lead mb-5">Giao dịch của bạn đã được xử lý thành công. Bạn hiện có thể truy cập các tính năng premium!</p>
-                    
-                    <div class="d-flex justify-content-center gap-3">
-                        <a href="{% url 'payment:user_subscriptions' %}" class="btn btn-outline-primary action-button">
-                            <i class="fas fa-history me-2"></i> Xem Lịch Sử Đăng Ký
-                        </a>
-                        <a href="{% url 'home' %}" class="btn btn-primary action-button">
-                            <i class="fas fa-home me-2"></i> Về Trang Chủ
-                        </a>
-                    </div>
+                <div class="detail-row">
+                    <span class="detail-label">Ngày bắt đầu:</span>
+                    <span class="detail-value">{{ subscription.start_date|date:"d/m/Y" }}</span>
                 </div>
+                <div class="detail-row">
+                    <span class="detail-label">Ngày hết hạn:</span>
+                    <span class="detail-value">{{ subscription.end_date|date:"d/m/Y" }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Trạng thái:</span>
+                    <span class="detail-value text-success">Đang hoạt động</span>
+                </div>
+            </div>
+            {% endif %}
+            
+            <div class="action-buttons">
+                <a href="{% url 'home' %}" class="btn btn-primary">
+                    <i class="fas fa-home me-2"></i>Trang chủ
+                </a>
+                <a href="{% url 'payment:user_subscriptions' %}" class="btn btn-outline-primary">
+                    <i class="fas fa-list-alt me-2"></i>Lịch sử đăng ký
+                </a>
             </div>
         </div>
     </div>

@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Thanh toán bằng thẻ tín dụng{% endblock %}
+
+{% block additional_styles %}
+<style>
+    .payment-container {
+        padding-top: 70px;
+        padding-bottom: 50px;
+    }
+    
+    .card-form {
+        max-width: 600px;
+        margin: 0 auto;
+    }
+    
+    .card-header {
+        padding: 20px;
+    }
+    
+    .form-control {
+        height: 50px;
+        padding-left: 15px;
+    }
+    
+    .card-logos {
+        display: flex;
+        margin-bottom: 20px;
+    }
+    
+    .card-logo {
+        height: 35px;
+        margin-right: 10px;
+    }
+    
+    .credit-card-field {
+        position: relative;
+    }
+    
+    .credit-card-field i {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #6c757d;
+    }
+    
+    .card-exp-cvv {
+        display: flex;
+        gap: 20px;
+    }
+    
+    .selected-plan {
+        background: rgba(40, 167, 69, 0.1);
+        border: 1px solid rgba(40, 167, 69, 0.3);
+        border-radius: var(--border-radius);
+        padding: 15px;
+        margin-bottom: 30px;
+    }
+    
+    .btn-pay {
+        height: 50px;
+        font-size: 1.1rem;
+        font-weight: 600;
+    }
+    
+    .secure-notice {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-top: 20px;
+        color: #6c757d;
+    }
+    
+    .secure-notice i {
+        margin-right: 10px;
+        color: #28a745;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container payment-container">
+    <h1 class="text-center mb-4">Thanh toán bằng thẻ tín dụng</h1>
+    
+    <div class="card card-form shadow">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">Thông tin thanh toán</h4>
+        </div>
+        <div class="card-body">
+            <div class="selected-plan mb-4">
+                <h5>Gói đã chọn: {{ plan.name }}</h5>
+                <p class="mb-0">Tổng thanh toán: <strong>{{ plan.price|floatformat:0 }} VND</strong></p>
+            </div>
+            
+            <div class="card-logos">
+                <img src="{% static 'images/visa-logo.png' %}" alt="Visa" class="card-logo">
+                <img src="{% static 'images/mastercard-logo.png' %}" alt="MasterCard" class="card-logo">
+                <img src="{% static 'images/jcb-logo.png' %}" alt="JCB" class="card-logo">
+            </div>
+            
+            <form action="{% url 'payment:subscription_success' %}" method="post">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="cardName" class="form-label">Tên trên thẻ</label>
+                    <input type="text" class="form-control" id="cardName" placeholder="Nhập tên in trên thẻ" required>
+                </div>
+                
+                <div class="mb-3 credit-card-field">
+                    <label for="cardNumber" class="form-label">Số thẻ</label>
+                    <input type="text" class="form-control" id="cardNumber" placeholder="1234 5678 9012 3456" required>
+                    <i class="fas fa-credit-card"></i>
+                </div>
+                
+                <div class="card-exp-cvv mb-4">
+                    <div class="flex-grow-1">
+                        <label for="expDate" class="form-label">Ngày hết hạn</label>
+                        <input type="text" class="form-control" id="expDate" placeholder="MM/YY" required>
+                    </div>
+                    
+                    <div>
+                        <label for="cvv" class="form-label">CVV</label>
+                        <input type="text" class="form-control" id="cvv" placeholder="123" required>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-pay w-100">Thanh toán {{ plan.price|floatformat:0 }} VND</button>
+                
+                <div class="secure-notice">
+                    <i class="fas fa-lock"></i>
+                    <span>Thông tin thanh toán của bạn được bảo mật.</span>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div class="text-center mt-4">
+        <a href="{% url 'payment:payment_methods' plan.id %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Quay lại phương thức thanh toán
+        </a>
+    </div>
+</div>
+{% endblock %} 

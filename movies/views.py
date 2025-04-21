@@ -259,6 +259,32 @@ def watch_episode(request, movie_id, episode_number):
     
     episode = get_object_or_404(Episode, movie=movie, episode_number=episode_number)
     
+    # Check if this is a premium movie
+    if movie.is_premium:
+        try:
+            # Try to import Subscription from payment app
+            from payment.models import Subscription
+            
+            # Check if user has a valid subscription
+            subscription = Subscription.objects.filter(
+                user=request.user,
+                is_active=True,
+                end_date__gt=timezone.now()
+            ).first()
+            
+            if not subscription:
+                messages.warning(request, 'Bạn cần có gói Premium để xem phim này. Vui lòng nâng cấp tài khoản.')
+                return redirect('payment:subscription_plans')
+            
+            has_premium_access = True
+        except Exception as e:
+            # Log error and redirect to subscription page
+            print(f"Error checking subscription: {str(e)}")
+            messages.error(request, 'Không thể xác minh trạng thái Premium. Vui lòng thử lại sau.')
+            return redirect('payment:subscription_plans')
+    else:
+        has_premium_access = True
+    
     # Get all episodes for the navigation
     episodes = movie.episodes.all().order_by('episode_number')
     
@@ -266,13 +292,9 @@ def watch_episode(request, movie_id, episode_number):
     next_episode = episodes.filter(episode_number__gt=episode_number).order_by('episode_number').first()
     prev_episode = episodes.filter(episode_number__lt=episode_number).order_by('-episode_number').first()
     
-    # Check if this is a premium movie
-    is_premium_content = movie.is_premium
-    
-    # Check if user is premium (simplified for now)
-    # In a real implementation, you would check the user's subscription status
-    is_premium_user = request.user.is_authenticated and hasattr(request, 'is_premium') and request.is_premium
-    has_premium_access = not is_premium_content or is_premium_user
+    # Increment view count for the movie
+    movie.views += 1
+    movie.save()
     
     context = {
         'movie': movie,
@@ -280,7 +302,7 @@ def watch_episode(request, movie_id, episode_number):
         'episodes': episodes,
         'next_episode': next_episode,
         'prev_episode': prev_episode,
-        'is_premium_content': is_premium_content,
+        'is_premium_content': movie.is_premium,
         'has_premium_access': has_premium_access,
     }
     

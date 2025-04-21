@@ -1,0 +1,161 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Chọn phương thức thanh toán{% endblock %}
+
+{% block additional_styles %}
+<style>
+    .payment-header {
+        margin-bottom: 30px;
+    }
+    
+    .payment-methods-container {
+        padding-top: 70px;
+        padding-bottom: 30px;
+    }
+    
+    .payment-method-card {
+        border-radius: var(--border-radius);
+        margin-bottom: 20px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .payment-method-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    }
+    
+    .payment-method-header {
+        padding: 15px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .payment-method-content {
+        padding: 20px;
+    }
+    
+    .payment-method-logo {
+        height: 40px;
+        max-width: 100%;
+        object-fit: contain;
+    }
+    
+    .method-description {
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.7);
+    }
+    
+    .selected-plan {
+        background: rgba(40, 167, 69, 0.1);
+        border: 1px solid rgba(40, 167, 69, 0.3);
+        border-radius: var(--border-radius);
+        padding: 15px;
+        margin-bottom: 30px;
+    }
+    
+    .back-button {
+        margin-right: 10px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container payment-methods-container">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="text-center payment-header">Chọn phương thức thanh toán</h1>
+            
+            <div class="selected-plan mb-4">
+                <h4>Gói đã chọn: {{ plan.name }}</h4>
+                <p>Giá: {{ plan.price|floatformat:0 }} VND</p>
+                <p>Thời hạn: {% if plan.duration_months == 1 %}1 tháng{% elif plan.duration_months == 3 %}3 tháng{% elif plan.duration_months == 6 %}6 tháng{% endif %}</p>
+            </div>
+            
+            <h4 class="mb-3">Chọn phương thức thanh toán:</h4>
+            
+            <div class="row">
+                <!-- VNPAY Option -->
+                <div class="col-md-6">
+                    <form action="{% url 'payment:process_subscription' plan.id %}" method="post">
+                        {% csrf_token %}
+                        <div class="card payment-method-card">
+                            <div class="card-header payment-method-header">
+                                <img src="{% static 'images/vnpay-logo.png' %}" alt="VNPAY" class="payment-method-logo">
+                            </div>
+                            <div class="card-body payment-method-content">
+                                <h5>Thanh toán qua VNPAY</h5>
+                                <p class="method-description">Thanh toán trực tuyến bằng thẻ ATM, VISA, JCB, MasterCard hoặc ví điện tử VNPAY.</p>
+                                <button type="submit" class="btn btn-primary mt-3 w-100">Tiếp tục với VNPAY</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Credit Card Option -->
+                <div class="col-md-6">
+                    <form action="{% url 'payment:process_credit_card' plan.id %}" method="post">
+                        {% csrf_token %}
+                        <div class="card payment-method-card">
+                            <div class="card-header payment-method-header">
+                                <div class="d-flex">
+                                    <img src="{% static 'images/visa-logo.png' %}" alt="VISA" class="payment-method-logo me-2">
+                                    <img src="{% static 'images/mastercard-logo.png' %}" alt="MasterCard" class="payment-method-logo me-2">
+                                    <img src="{% static 'images/jcb-logo.png' %}" alt="JCB" class="payment-method-logo">
+                                </div>
+                            </div>
+                            <div class="card-body payment-method-content">
+                                <h5>Thẻ tín dụng / Ghi nợ</h5>
+                                <p class="method-description">Thanh toán trực tiếp bằng thẻ tín dụng hoặc thẻ ghi nợ quốc tế.</p>
+                                <button type="submit" class="btn btn-primary mt-3 w-100">Tiếp tục với Thẻ tín dụng</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="row mt-4">
+                <!-- Bank Transfer Option -->
+                <div class="col-md-6">
+                    <form action="{% url 'payment:process_bank_transfer' plan.id %}" method="post">
+                        {% csrf_token %}
+                        <div class="card payment-method-card">
+                            <div class="card-header payment-method-header">
+                                <i class="fas fa-university fa-2x"></i>
+                            </div>
+                            <div class="card-body payment-method-content">
+                                <h5>Chuyển khoản ngân hàng</h5>
+                                <p class="method-description">Chuyển khoản trực tiếp đến tài khoản ngân hàng của chúng tôi.</p>
+                                <button type="submit" class="btn btn-primary mt-3 w-100">Tiếp tục với Chuyển khoản</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Momo E-Wallet Option -->
+                <div class="col-md-6">
+                    <form action="{% url 'payment:process_momo' plan.id %}" method="post">
+                        {% csrf_token %}
+                        <div class="card payment-method-card">
+                            <div class="card-header payment-method-header">
+                                <img src="{% static 'images/momo-logo.png' %}" alt="MoMo" class="payment-method-logo">
+                            </div>
+                            <div class="card-body payment-method-content">
+                                <h5>Ví MoMo</h5>
+                                <p class="method-description">Thanh toán nhanh chóng và bảo mật với ví điện tử MoMo.</p>
+                                <button type="submit" class="btn btn-primary mt-3 w-100">Tiếp tục với MoMo</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="text-center mt-4">
+                <a href="{% url 'payment:subscription_plans' %}" class="btn btn-outline-secondary back-button">
+                    <i class="fas fa-arrow-left"></i> Quay lại
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

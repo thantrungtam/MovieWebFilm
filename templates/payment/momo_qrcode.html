@@ -1,0 +1,252 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Thanh toán qua MoMo{% endblock %}
+
+{% block additional_styles %}
+<style>
+    .payment-container {
+        padding-top: 70px;
+        padding-bottom: 50px;
+    }
+    
+    .momo-card {
+        max-width: 500px;
+        margin: 0 auto;
+    }
+    
+    .momo-header {
+        background-color: #b0006d;
+        padding: 20px;
+    }
+    
+    .momo-logo {
+        height: 40px;
+    }
+    
+    .qr-code-container {
+        padding: 30px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .qr-code {
+        width: 250px;
+        height: 250px;
+        margin-bottom: 20px;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        padding: 10px;
+    }
+    
+    .selected-plan {
+        background: rgba(40, 167, 69, 0.1);
+        border: 1px solid rgba(40, 167, 69, 0.3);
+        border-radius: var(--border-radius);
+        padding: 15px;
+        margin-bottom: 30px;
+        width: 100%;
+    }
+    
+    .instruction-step {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 15px;
+    }
+    
+    .step-number {
+        background-color: #b0006d;
+        color: white;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 15px;
+        flex-shrink: 0;
+    }
+    
+    .step-text {
+        flex-grow: 1;
+    }
+    
+    .payment-info {
+        width: 100%;
+        margin-top: 20px;
+    }
+    
+    .payment-info-item {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    }
+    
+    .payment-info-item:last-child {
+        border-bottom: none;
+    }
+    
+    .payment-label {
+        color: #6c757d;
+    }
+    
+    .payment-value {
+        font-weight: 600;
+    }
+    
+    .countdown {
+        margin-top: 20px;
+        text-align: center;
+    }
+    
+    .countdown-time {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #b0006d;
+    }
+    
+    .countdown-label {
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+    
+    .open-app-btn {
+        background-color: #b0006d;
+        color: white;
+        border: none;
+        padding: 12px 25px;
+        border-radius: 25px;
+        font-weight: 600;
+        margin-top: 20px;
+        transition: all 0.3s ease;
+    }
+    
+    .open-app-btn:hover {
+        background-color: #8e0057;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(176, 0, 109, 0.3);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container payment-container">
+    <h1 class="text-center mb-4">Thanh toán qua ví MoMo</h1>
+    
+    <div class="card momo-card shadow">
+        <div class="card-header momo-header">
+            <img src="{% static 'images/momo-logo.png' %}" alt="MoMo" class="momo-logo">
+        </div>
+        <div class="card-body">
+            <div class="qr-code-container">
+                <div class="selected-plan">
+                    <h5>Gói đã chọn: {{ plan.name }}</h5>
+                    <p class="mb-0">Tổng thanh toán: <strong>{{ plan.price|floatformat:0 }} VND</strong></p>
+                </div>
+                
+                <img src="{% static 'images/momo-qrcode.png' %}" alt="MoMo QR Code" class="qr-code">
+                
+                <div class="payment-info">
+                    <div class="payment-info-item">
+                        <span class="payment-label">Số tiền:</span>
+                        <span class="payment-value">{{ plan.price|floatformat:0 }} VND</span>
+                    </div>
+                    <div class="payment-info-item">
+                        <span class="payment-label">Nội dung chuyển khoản:</span>
+                        <span class="payment-value">MP{{ payment.order_id }}</span>
+                    </div>
+                </div>
+                
+                <div class="countdown">
+                    <div class="countdown-time" id="countdown">10:00</div>
+                    <div class="countdown-label">Mã QR sẽ hết hạn sau thời gian trên</div>
+                </div>
+                
+                <a href="momo://" class="btn open-app-btn mt-4">
+                    <i class="fas fa-external-link-alt me-2"></i> Mở ứng dụng MoMo
+                </a>
+            </div>
+            
+            <h5 class="mt-3 mb-3">Hướng dẫn thanh toán:</h5>
+            
+            <div class="instruction-step">
+                <div class="step-number">1</div>
+                <div class="step-text">Mở ứng dụng MoMo trên điện thoại của bạn</div>
+            </div>
+            
+            <div class="instruction-step">
+                <div class="step-number">2</div>
+                <div class="step-text">Chọn "Quét mã QR" từ màn hình chính</div>
+            </div>
+            
+            <div class="instruction-step">
+                <div class="step-number">3</div>
+                <div class="step-text">Quét mã QR hiển thị trên trang này</div>
+            </div>
+            
+            <div class="instruction-step">
+                <div class="step-number">4</div>
+                <div class="step-text">Xác nhận thanh toán số tiền {{ plan.price|floatformat:0 }} VND</div>
+            </div>
+            
+            <div class="instruction-step">
+                <div class="step-number">5</div>
+                <div class="step-text">Sau khi thanh toán thành công, trang sẽ tự động chuyển hướng</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="text-center mt-4">
+        <a href="{% url 'payment:subscription_success' %}" class="btn btn-primary">
+            Tôi đã thanh toán
+        </a>
+        <a href="{% url 'payment:payment_methods' plan.id %}" class="btn btn-outline-secondary ms-2">
+            <i class="fas fa-arrow-left"></i> Quay lại
+        </a>
+    </div>
+</div>
+
+<script>
+    // Countdown timer
+    function startCountdown(duration, display) {
+        var timer = duration, minutes, seconds;
+        setInterval(function () {
+            minutes = parseInt(timer / 60, 10);
+            seconds = parseInt(timer % 60, 10);
+            
+            minutes = minutes < 10 ? "0" + minutes : minutes;
+            seconds = seconds < 10 ? "0" + seconds : seconds;
+            
+            display.textContent = minutes + ":" + seconds;
+            
+            if (--timer < 0) {
+                timer = 0;
+                // Redirect when timer reaches 0
+                // window.location.href = "{% url 'payment:payment_failed' %}";
+            }
+        }, 1000);
+    }
+    
+    window.onload = function () {
+        var tenMinutes = 60 * 10,
+            display = document.querySelector('#countdown');
+        startCountdown(tenMinutes, display);
+    };
+    
+    // Auto refresh to check payment status every 5 seconds
+    // Commented out for now
+    /*
+    setInterval(function() {
+        fetch('{% url "payment:check_payment_status" payment.id %}')
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'completed') {
+                    window.location.href = '{% url "payment:subscription_success" %}';
+                }
+            });
+    }, 5000);
+    */
+</script>
+{% endblock %} 

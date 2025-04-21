@@ -16,6 +16,7 @@ from django.urls import reverse
 from django.utils import timezone
 from urllib.parse import quote as urlquote
 from .vnpay import vnpay
+from django.contrib import messages
 
 from .models import SubscriptionPlan, Subscription, Payment
 from .forms import PaymentForm
@@ -75,81 +76,47 @@ def payment(request):
         return render(request, "payment.html", {"title": "Thanh toán"})
 
 
-# def payment_ipn(request):
-#     inputData = request.GET
-#     if inputData:
-#         vnp = vnpay()
-#         vnp.responseData = inputData.dict()
-#         order_id = inputData['vnp_TxnRef']
-#         amount = inputData['vnp_Amount']
-#         order_desc = inputData['vnp_OrderInfo']
-#         vnp_TransactionNo = inputData['vnp_TransactionNo']
-#         vnp_ResponseCode = inputData['vnp_ResponseCode']
-#         vnp_TmnCode = inputData['vnp_TmnCode']
-#         vnp_PayDate = inputData['vnp_PayDate']
-#         vnp_BankCode = inputData['vnp_BankCode']
-#         vnp_CardType = inputData['vnp_CardType']
-#         if vnp.validate_response(settings.VNPAY_HASH_SECRET_KEY):
-#             # Check & Update Order Status in your Database
-#             # Your code here
-#             firstTimeUpdate = True
-#             totalamount = True
-#             if totalamount:
-#                 if firstTimeUpdate:
-#                     if vnp_ResponseCode == '00':
-#                         print('Payment Success. Your code implement here')
-#                     else:
-#                         print('Payment Error. Your code implement here')
-
-#                     # Return VNPAY: Merchant update success
-#                     result = JsonResponse({'RspCode': '00', 'Message': 'Confirm Success'})
-#                 else:
-#                     # Already Update
-#                     result = JsonResponse({'RspCode': '02', 'Message': 'Order Already Update'})
-#             else:
-#                 # invalid amount
-#                 result = JsonResponse({'RspCode': '04', 'Message': 'invalid amount'})
-#         else:
-#             # Invalid Signature
-#             result = JsonResponse({'RspCode': '97', 'Message': 'Invalid Signature'})
-#     else:
-#         result = JsonResponse({'RspCode': '99', 'Message': 'Invalid request'})
-
-#     return result
-
 def payment_ipn(request):
     inputData = request.GET
     if inputData:
         vnp = vnpay()
         vnp.responseData = inputData.dict()
         order_id = inputData['vnp_TxnRef']
-        amount = int(inputData['vnp_Amount']) // 100  # VNPay gửi *100
+        amount = inputData['vnp_Amount']
+        order_desc = inputData['vnp_OrderInfo']
+        vnp_TransactionNo = inputData['vnp_TransactionNo']
         vnp_ResponseCode = inputData['vnp_ResponseCode']
-
+        vnp_TmnCode = inputData['vnp_TmnCode']
+        vnp_PayDate = inputData['vnp_PayDate']
+        vnp_BankCode = inputData['vnp_BankCode']
+        vnp_CardType = inputData['vnp_CardType']
         if vnp.validate_response(settings.VNPAY_HASH_SECRET_KEY):
-            try:
-                payment = Payment.objects.get(order_id=order_id)
+            # Check & Update Order Status in your Database
+            # Your code here
+            firstTimeUpdate = True
+            totalamount = True
+            if totalamount:
+                if firstTimeUpdate:
+                    if vnp_ResponseCode == '00':
+                        print('Payment Success. Your code implement here')
+                    else:
+                        print('Payment Error. Your code implement here')
 
-                if payment.payment_status != 'pending':
-                    return JsonResponse({'RspCode': '02', 'Message': 'Order already updated'})
-
-                if payment.amount != amount:
-                    return JsonResponse({'RspCode': '04', 'Message': 'Invalid amount'})
-
-                if vnp_ResponseCode == '00':
-                    payment.payment_status = 'completed'
+                    # Return VNPAY: Merchant update success
+                    result = JsonResponse({'RspCode': '00', 'Message': 'Confirm Success'})
                 else:
-                    payment.payment_status = 'failed'
-                
-                payment.save()
-
-                return JsonResponse({'RspCode': '00', 'Message': 'Confirm Success'})
-            except Payment.DoesNotExist:
-                return JsonResponse({'RspCode': '01', 'Message': 'Order not found'})
+                    # Already Update
+                    result = JsonResponse({'RspCode': '02', 'Message': 'Order Already Update'})
+            else:
+                # invalid amount
+                result = JsonResponse({'RspCode': '04', 'Message': 'invalid amount'})
         else:
-            return JsonResponse({'RspCode': '97', 'Message': 'Invalid Signature'})
+            # Invalid Signature
+            result = JsonResponse({'RspCode': '97', 'Message': 'Invalid Signature'})
     else:
-        return JsonResponse({'RspCode': '99', 'Message': 'Invalid request'})
+        result = JsonResponse({'RspCode': '99', 'Message': 'Invalid request'})
+
+    return result
 
 
 
@@ -325,7 +292,7 @@ def subscription_plans(request):
     ).first()
     
     return render(request, 'payment/subscription_plans.html', {
-        'plans': plans,
+        'subscription_plans': plans,
         'current_subscription': current_subscription
     })
 
@@ -334,41 +301,48 @@ def process_subscription(request, plan_id):
     """
     Process the subscription and redirect to VNPay payment
     """
-    plan = get_object_or_404(SubscriptionPlan, id=plan_id)
+    try:
+        plan = get_object_or_404(SubscriptionPlan, id=plan_id)
+        
+        # Generate a unique order ID
+        order_id = str(uuid.uuid4().int)[:12]
+        
+        # Create payment record
+        payment = Payment.objects.create(
+            user=request.user,
+            order_id=order_id,
+            amount=plan.price,
+            payment_status='pending'
+        )
+        
+        # Prepare VNPay payment
+        vnp = vnpay()
+        vnp.requestData['vnp_Version'] = '2.1.0'
+        vnp.requestData['vnp_Command'] = 'pay'
+        vnp.requestData['vnp_TmnCode'] = settings.VNPAY_TMN_CODE
+        vnp.requestData['vnp_Amount'] = int(plan.price) * 100  # Amount in VND, multiply by 100
+        vnp.requestData['vnp_CurrCode'] = 'VND'
+        vnp.requestData['vnp_TxnRef'] = order_id
+        vnp.requestData['vnp_OrderInfo'] = f"Thanh toán gói {plan.name} - {plan.duration_months} tháng"
+        vnp.requestData['vnp_OrderType'] = 'billpayment'
+        vnp.requestData['vnp_Locale'] = 'vn'
+        vnp.requestData['vnp_CreateDate'] = datetime.now().strftime('%Y%m%d%H%M%S')
+        vnp.requestData['vnp_IpAddr'] = get_client_ip(request)
+        vnp.requestData['vnp_ReturnUrl'] = request.build_absolute_uri(reverse('payment:vnpay_return'))
+        
+        # Store plan_id in session for later use
+        request.session['subscription_plan_id'] = plan.id
+        request.session['payment_id'] = payment.id
+        
+        # Get the payment URL and redirect to VNPay
+        vnpay_payment_url = vnp.get_payment_url(settings.VNPAY_PAYMENT_URL, settings.VNPAY_HASH_SECRET_KEY)
+        return redirect(vnpay_payment_url)
     
-    # Generate a unique order ID
-    order_id = str(uuid.uuid4().int)[:12]
-    
-    # Create payment record
-    payment = Payment.objects.create(
-        user=request.user,
-        order_id=order_id,
-        amount=plan.price,
-        payment_status='pending'
-    )
-    
-    # Prepare VNPay payment
-    vnp = vnpay()
-    vnp.requestData['vnp_Version'] = '2.1.0'
-    vnp.requestData['vnp_Command'] = 'pay'
-    vnp.requestData['vnp_TmnCode'] = settings.VNPAY_TMN_CODE
-    vnp.requestData['vnp_Amount'] = plan.price * 100  # Amount in VND, multiply by 100
-    vnp.requestData['vnp_CurrCode'] = 'VND'
-    vnp.requestData['vnp_TxnRef'] = order_id
-    vnp.requestData['vnp_OrderInfo'] = f"Payment for {plan.name} subscription - {plan.duration_months} months"
-    vnp.requestData['vnp_OrderType'] = 'billpayment'
-    vnp.requestData['vnp_Locale'] = 'vn'
-    vnp.requestData['vnp_CreateDate'] = datetime.now().strftime('%Y%m%d%H%M%S')
-    vnp.requestData['vnp_IpAddr'] = get_client_ip(request)
-    vnp.requestData['vnp_ReturnUrl'] = request.build_absolute_uri(reverse('payment:vnpay_return'))
-    
-    # Store plan_id in session for later use
-    request.session['subscription_plan_id'] = plan.id
-    request.session['payment_id'] = payment.id
-    
-    # Get the payment URL and redirect to VNPay
-    vnpay_payment_url = vnp.get_payment_url(settings.VNPAY_PAYMENT_URL, settings.VNPAY_HASH_SECRET_KEY)
-    return redirect(vnpay_payment_url)
+    except Exception as e:
+        # Log the error
+        print(f"Error processing subscription: {str(e)}")
+        messages.error(request, "Có lỗi xảy ra khi xử lý thanh toán. Vui lòng thử lại sau.")
+        return redirect('payment:payment_failed')
 
 @login_required
 def vnpay_return(request):
@@ -520,6 +494,117 @@ def user_subscriptions(request):
     return render(request, 'payment/user_subscriptions.html', {
         'subscriptions': subscriptions,
         'payments': payments
+    })
+
+@login_required
+def payment_methods(request, plan_id):
+    """
+    Display payment method options for the selected subscription plan
+    """
+    plan = get_object_or_404(SubscriptionPlan, id=plan_id)
+    
+    return render(request, 'payment/payment_methods.html', {
+        'plan': plan
+    })
+
+@login_required
+def process_credit_card(request, plan_id):
+    """
+    Process payment using credit card
+    """
+    plan = get_object_or_404(SubscriptionPlan, id=plan_id)
+    
+    # Generate a unique order ID
+    order_id = str(uuid.uuid4().int)[:12]
+    
+    # Create payment record
+    payment = Payment.objects.create(
+        user=request.user,
+        order_id=order_id,
+        amount=plan.price,
+        payment_status='pending'
+    )
+    
+    # Store plan_id in session for later use
+    request.session['subscription_plan_id'] = plan.id
+    request.session['payment_id'] = payment.id
+    
+    # For now, redirect to a credit card form page
+    return render(request, 'payment/credit_card_form.html', {
+        'plan': plan,
+        'payment': payment
+    })
+
+@login_required
+def process_bank_transfer(request, plan_id):
+    """
+    Process payment using bank transfer
+    """
+    plan = get_object_or_404(SubscriptionPlan, id=plan_id)
+    
+    # Generate a unique order ID
+    order_id = str(uuid.uuid4().int)[:12]
+    
+    # Create payment record
+    payment = Payment.objects.create(
+        user=request.user,
+        order_id=order_id,
+        amount=plan.price,
+        payment_status='pending'
+    )
+    
+    # Store plan_id in session for later use
+    request.session['subscription_plan_id'] = plan.id
+    request.session['payment_id'] = payment.id
+    
+    # For now, show bank transfer information
+    return render(request, 'payment/bank_transfer_info.html', {
+        'plan': plan,
+        'payment': payment,
+        'order_id': order_id
+    })
+
+@login_required
+def process_momo(request, plan_id):
+    """
+    Process payment using MoMo e-wallet
+    """
+    plan = get_object_or_404(SubscriptionPlan, id=plan_id)
+    
+    # Generate a unique order ID
+    order_id = str(uuid.uuid4().int)[:12]
+    
+    # Create payment record
+    payment = Payment.objects.create(
+        user=request.user,
+        order_id=order_id,
+        amount=plan.price,
+        payment_status='pending'
+    )
+    
+    # Store plan_id in session for later use
+    request.session['subscription_plan_id'] = plan.id
+    request.session['payment_id'] = payment.id
+    
+    # For now, redirect to a MoMo QR code page
+    return render(request, 'payment/momo_qrcode.html', {
+        'plan': plan,
+        'payment': payment
+    })
+
+@login_required
+def vnpay_demo(request, plan_id):
+    """
+    Display a VNPAY demo page
+    """
+    plan = get_object_or_404(SubscriptionPlan, id=plan_id)
+    
+    # Generate a unique order ID
+    order_id = str(uuid.uuid4().int)[:12]
+    
+    return render(request, 'payment/vnpay_demo.html', {
+        'plan': plan,
+        'order_id': order_id
     })
 
 
