@@ -123,10 +123,17 @@
                                 <span>Sắp chiếu</span>
                             </div>
                             {% else %}
-                            <a href="{% url 'watch_movie' movie.id %}" class="action-btn watch-btn">
-                                <i class="bi bi-play-fill"></i>
-                                <span>Xem phim</span>
-                            </a>
+                                {% if movie.movie_type == 'series' and episodes %}
+                                    <a href="{% url 'watch_episode' movie.id episodes.0.episode_number %}" class="action-btn watch-btn">
+                                        <i class="bi bi-play-fill"></i>
+                                        <span>Xem phim</span>
+                                    </a>
+                                {% else %}
+                                    <a href="{% url 'watch_movie' movie.id %}" class="action-btn watch-btn">
+                                        <i class="bi bi-play-fill"></i>
+                                        <span>Xem phim</span>
+                                    </a>
+                                {% endif %}
                             {% endif %}
 
                             <a href="{% url 'watch_trailer' movie.id %}" class="action-btn trailer-btn">

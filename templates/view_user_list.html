@@ -115,6 +115,49 @@
         </div>
     </div>
 
+    <!-- Section: Diễn viên yêu thích (dùng giao diện actor-card) -->
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2 class="card-title mb-0">Diễn viên yêu thích</h2>
+                    </div>
+                    {% if user_list.actors.all %}
+                        <div class="row">
+                            {% for actor in user_list.actors.all %}
+                            <div class="col-md-2 mb-4">
+                                <div class="card actor-card h-100 position-relative">
+                                    <a href="{% url 'actor:actor_detail' actor.id %}" class="text-decoration-none">
+                                        {% if actor.image %}
+                                            <img src="{{ actor.image.url }}" class="card-img-top" alt="{{ actor.name }}">
+                                        {% else %}
+                                            <div class="default-actor-image d-flex align-items-center justify-content-center" style="height:100%;width:100%;background:#666;color:#fff;font-size:2rem;">
+                                                <i class="bi bi-person-fill"></i>
+                                            </div>
+                                        {% endif %}
+                                        <div class="actor-info text-center p-2">
+                                            <h5 class="card-title mb-1">{{ actor.name }}</h5>
+                                            {% if actor.alternate_name %}
+                                            <h6 class="card-subtitle mb-2 text-muted">{{ actor.alternate_name }}</h6>
+                                            {% endif %}
+                                        </div>
+                                    </a>
+                                    <a href="{% url 'remove_actor_from_list' actor.id %}" class="btn btn-outline-danger btn-sm position-absolute top-0 end-0 m-2" style="z-index:2;">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </a>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted">Bạn chưa thêm diễn viên nào vào bộ sưu tập.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
 <style>
     /* Spacer to prevent content from overlapping with fixed navbar */
     .navbar-spacer {

@@ -212,9 +212,9 @@
                     {% endif %}
 
                     <div class="movie-info">
-                        <h5>{{ movie.title }}</h5>
+                        <!-- <h5>{{ movie.title }}</h5> -->
                         <div class="movie-stats">
-                            <div class="movie-stat">
+                            <!-- <div class="movie-stat">
                                 <i class="bi bi-star-fill rating-icon"></i>
                                 <span>{{ movie.average_rating|floatformat:1 }}</span>
                             </div>
@@ -225,10 +225,10 @@
                             <div class="movie-stat">
                                 <i class="bi bi-heart-fill likes-icon"></i>
                                 <span>{{ movie.like_count }}</span>
-                            </div>
+                            </div> -->
                         </div>
                         <div class="screening-date">
-                            <i class="bi bi-calendar-date me-1"></i>
+                            <a class="bi bi-calendar-date me-1"></a>
                             Ngày chiếu: {{ movie.screening_schedule|date:"d/m/Y" }}
                         </div>
                         <div class="screening-time">

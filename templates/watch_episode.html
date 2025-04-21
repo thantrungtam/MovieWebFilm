@@ -246,7 +246,11 @@
                     {% elif episode.video_link %}
                     <iframe class="video-player" src="{{ episode.video_link }}" frameborder="0" allowfullscreen></iframe>
                     {% elif episode.streaming_link %}
+                    {% if 'player.phimapi.com' in episode.streaming_link %}
                     <iframe class="video-player" src="{{ episode.streaming_link }}" frameborder="0" allowfullscreen></iframe>
+                    {% else %}
+                    <iframe class="video-player" src="https://player.phimapi.com/player/?url={{ episode.streaming_link }}" frameborder="0" allowfullscreen></iframe>
+                    {% endif %}
                     {% else %}
                     <div class="video-player d-flex justify-content-center align-items-center">
                         <p class="text-light">Không tìm thấy nguồn phim.</p>

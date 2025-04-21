@@ -139,7 +139,7 @@ def remove_actor_from_list(request, actor_id):
             })
         messages.error(request, f'{actor.name} is not in your collection!')
     
-    return redirect('actor_detail', pk=actor_id)
+    return redirect('view_user_list')
 
 @login_required
 def check_actor_in_list(request, actor_id):
@@ -163,8 +163,8 @@ def check_actor_in_list(request, actor_id):
             }
         })
     
-    # For non-AJAX requests, redirect to actor detail
-    return redirect('actor_detail', pk=actor_id)
+    # For non-AJAX requests, redirect to user list
+    return redirect('view_user_list')
 
 @login_required
 def view_user_list(request):
@@ -224,7 +224,20 @@ def watch_movie(request, movie_id):
     movie.views += 1
     movie.save()
     
-    return render(request, 'watch_movie.html', {'movie': movie})
+    context = {'movie': movie}
+    
+    # Add episodes for series movies
+    if movie.movie_type == 'series':
+        episodes = movie.episodes.all().order_by('episode_number')
+        # For each episode, check if it's available based on screening schedule
+        for episode in episodes:
+            episode.is_available = True
+            if movie.screening_schedule and movie.screening_schedule > timezone.now():
+                episode.is_available = False
+                
+        context['episodes'] = episodes
+    
+    return render(request, 'watch_movie.html', context)
 
 @login_required
 def watch_trailer(request, movie_id):

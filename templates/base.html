@@ -569,7 +569,7 @@
         /* Search Bar Styling */
         .search-form {
             position: relative;
-            max-width: 250px;
+            max-width: 350px;
             width: 100%;
         }
 
@@ -578,29 +578,28 @@
             width: 100%;
             display: flex;
             align-items: center;
+            max-width: 500px;
+            margin-left: 20px;
+            margin-right: 20px;
         }
 
         .search-input {
-            background-color: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: var(--text-light);
-            border-radius: 50px;
-            padding: 0.5rem 1.5rem;
-            font-family: 'Roboto', sans-serif;
-            transition: all var(--transition-speed);
-            width: 100%;
-            padding-right: 45px;
+            width: 400px;
+            max-width: 100%;
+            flex: 1;
+            padding-right: 40px;
         }
 
-        .search-input:focus {
-            background-color: rgba(255, 255, 255, 0.15);
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 0.25rem rgba(255, 71, 87, 0.25);
-            color: var(--text-light);
-        }
-
-        .search-input::placeholder {
-            color: var(--text-muted);
+        @media (max-width: 600px) {
+            .search-input {
+                width: 100%;
+                min-width: 0;
+            }
+            .search-wrapper {
+                max-width: 100%;
+                margin-left: 0;
+                margin-right: 0;
+            }
         }
 
         .search-btn {

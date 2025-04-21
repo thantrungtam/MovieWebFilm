@@ -27,6 +27,15 @@
                         <span><i class="bi bi-star-fill me-1"></i> {{ movie.get_average_rating|floatformat:1 }}</span>
                         <span><i class="bi bi-hand-thumbs-up-fill me-1"></i> {{ movie.get_like_count }}</span>
                     </div>
+                    {% if movie.movie_type == 'series' %}
+                    <div class="movie-type-badge mb-2">
+                        <i class="bi bi-collection-play me-1"></i> Phim bộ - {{ movie.episodes.count }} tập
+                    </div>
+                    {% else %}
+                    <div class="movie-type-badge mb-2">
+                        <i class="bi bi-film me-1"></i> Phim lẻ
+                    </div>
+                    {% endif %}
                     <a href="{% url 'movie_detail' movie.id %}" class="btn btn-primary watch-btn w-100">
                         <i class="fas fa-play me-2"></i>Xem
                     </a>
@@ -38,6 +47,20 @@
 </div>
 {% endblock %}
 
-<script>
+<style>
+    /* Movie Type Badge Styling */
+    .movie-type-badge {
+        display: inline-block;
+        padding: 0.25rem 0.5rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        background-color: rgba(255, 255, 255, 0.1);
+        color: var(--text-light);
+        text-align: center;
+        width: 100%;
+    }
     
-</script>
+    .movie-type-badge i {
+        color: var(--primary-light);
+    }
+</style>
