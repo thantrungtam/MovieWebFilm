@@ -248,7 +248,8 @@ class ScreeningScheduleView(ListView):
             movie.average_rating = movie.get_average_rating()
         context['movies'] = movies
         return context
-
+        
+@login_required
 def watch_episode(request, movie_id, episode_number):
     movie = get_object_or_404(Movie, id=movie_id)
     
