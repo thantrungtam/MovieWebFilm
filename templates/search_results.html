@@ -32,9 +32,12 @@
                         <span class="actor-tag gender-tag">{{ actor.get_gender_display }}</span>
                         <span class="actor-tag count-tag">{{ actor.movie_count }} phim</span>
                     </div>
-                    <a href="{% url 'actor:actor_detail' actor.id %}" class="btn action-btn actor-detail-btn">
+<!--                     <a href="{% url 'actor:actor_detail' actor.id %}" class="btn action-btn actor-detail-btn">
                         <i class="fas fa-info-circle me-1"></i>Chi tiết
-                    </a>
+                    </a> -->
+                        <a href="{% url 'actor:actor_detail' actor.id %}" class="btn btn-outline-light btn-sm rounded-pill">
+                            <i class="fas fa-info-circle me-1"></i>Chi tiết
+                        </a>
                 </div>
             </div>
         </div>
