@@ -107,7 +107,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'film_database',
         'USER': 'root',
-        'PASSWORD': 'thantam@311',
+        'PASSWORD': 'YOUR_PASSSWORD_HERE',
         'HOST': 'localhost',
         'PORT': '3306',
     }
